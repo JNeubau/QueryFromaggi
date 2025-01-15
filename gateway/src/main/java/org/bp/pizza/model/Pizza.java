@@ -14,7 +14,7 @@ package org.bp.pizza.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 
@@ -33,7 +33,7 @@ public class Pizza {
   private Float prize = null;
 
   @JsonProperty("prepTime")
-  private Duration prepTime = null;
+  private OffsetDateTime prepTime = null;
 
   public Pizza name(String name) {
     this.name = name;
@@ -107,7 +107,7 @@ public class Pizza {
     this.ingredients = ingredients;
   }
 
-  public Pizza prepTime(Duration prepTime) {
+  public Pizza prepTime(OffsetDateTime prepTime) {
     this.prepTime = prepTime;
     return this;
   }
@@ -117,11 +117,11 @@ public class Pizza {
    * @return checkOut
   **/
 
-  public Duration getPrepTime() {
+  public OffsetDateTime getPrepTime() {
     return prepTime;
   }
 
-  public void setPrepTime(Duration prepTime) {
+  public void setPrepTime(OffsetDateTime prepTime) {
     this.prepTime = prepTime;
   }
 

@@ -60,7 +60,7 @@ public class PizzaOrderingService extends RouteBuilder {
                 .process((exchange) -> {
                     exchange.getMessage().setHeader("pizzaCreationId", pizzaIdentifierService.getPizzaIdentifier());
                 })
-//                .to("direct:TravelBookRequest")
+                .to("direct:OrderPizzaRequest")
                 .to("direct:pizzaRequester");
 
         from("direct:pizzaRequester").routeId("pizzaRequester")
@@ -72,10 +72,10 @@ public class PizzaOrderingService extends RouteBuilder {
                         }
                 );
 
-//        from("direct:TravelBookRequest").routeId("TravelBookRequest")
-//                .log("brokerTopic fired")
-//                .marshal().json()
-//                .to("kafka:TravelReqTopic?brokers=localhost:9092");
+        from("direct:OrderPizzaRequest").routeId("OrderPizzaRequest")
+                .log("brokerTopic fired")
+                .marshal().json()
+                .to("kafka:PizzaReqTopic?brokers=localhost:9092");
     }
 
 //	private void bookHotelExceptionHandlers() {
