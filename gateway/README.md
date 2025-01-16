@@ -2,6 +2,15 @@
 - PizzaReqTopic - Ordering a pizza
 - PizzaInfoTopic - Pizza information
 - DeliveryInfoTopic - Delivery information
+- PizzaOrderingFailTopic - Failed pizza ordering
+
+
+# State Machine
+- Processing State: *NONE, STARTED, FINISHED, CANCELLED, COMPLETED* - 
+Stan przetwarzania danej instancji usługi, czyli węzeł grafu zmiany stanów
+
+- Processign Event ** - 
+zdarzenie, które zmienia stan danej instancji usługi, zyli krawędź skierowana grafu zmiany stanów
 
 
 ### Kafka setup for Windows
