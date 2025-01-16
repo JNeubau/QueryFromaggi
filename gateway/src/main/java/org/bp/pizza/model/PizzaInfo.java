@@ -16,7 +16,6 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.math.BigDecimal;
 /**
  * PizzaInfo
  */
@@ -27,7 +26,7 @@ public class PizzaInfo {
   private String id = null;
 
   @JsonProperty("cost")
-  private BigDecimal cost = null;
+  private Float cost = null;
 
   public PizzaInfo id(String id) {
     this.id = id;
@@ -47,7 +46,7 @@ public class PizzaInfo {
     this.id = id;
   }
 
-  public PizzaInfo cost(BigDecimal cost) {
+  public PizzaInfo cost(Float cost) {
     this.cost = cost;
     return this;
   }
@@ -57,11 +56,11 @@ public class PizzaInfo {
    * @return cost
   **/
 
-  public BigDecimal getCost() {
+  public Float getCost() {
     return cost;
   }
 
-  public void setCost(BigDecimal cost) {
+  public void setCost(Float cost) {
     this.cost = cost;
   }
 

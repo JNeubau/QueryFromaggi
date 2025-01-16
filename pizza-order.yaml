@@ -1,0 +1,178 @@
+openapi: 3.0.1
+info:
+#  title: Travel mircro service
+  title: Pizza order service
+  description: Micro service to create the ordered pizza
+  contact:
+#    email: supportm@bp.org
+    email: suppor@QueryFromaggi.pl
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: http://localhost:8090
+tags:
+- name: pizza
+  description: Ordered pizza to be created
+paths:
+  /createpizza:
+    post:
+      tags:
+      - pizza
+      summary: Creation of a pizza
+#      operationId: bookTravel
+      operationId: createPizza
+      requestBody:
+#        description: Details of travel which you are booking
+        description: Details of pizza which you are ordering
+        content:
+          application/json:
+            schema:
+#              $ref: '#/components/schemas/BookTravelRequest'
+              $ref: '#/components/schemas/PizzaCreationRequest'
+        required: true
+      responses:
+        400:
+          description: Problem during processing of the creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponse'
+
+components:
+  schemas:
+    Person:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+    Pizza:
+        type: object
+        properties:
+          name:
+            type: string
+          size:
+            type: string
+          ingredients:
+            type: array
+            items:
+              type: string
+          preparationTime:
+            type: number
+#    Hotel:
+#      type: object
+#      properties:
+#        name:
+#          type: string
+#        city:
+#          type: string
+#        country:
+#          type: string
+#        address:
+#          type: string
+#        checkIn:
+#          type: string
+#          format: date-time
+#        checkOut:
+#          type: string
+#          format: date-time
+    PizzaInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        cost:
+          type: number
+#    BookingInfo:
+#      type: object
+#      properties:
+#        id:
+#          type: string
+#        cost:
+#          type: number
+    Point:
+      type: object
+      properties:
+        address:
+          type: string
+        date:
+          type: string
+          format: date-time
+    Delivery:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Point' 
+        to:
+          $ref: '#/components/schemas/Point' 
+#    PaymentCard:
+#      type: object
+#      properties:
+#        name:
+#          type: string
+#        validTo:
+#          type: string
+#        number:
+#          type: string
+#    BookRoomRequest:
+#      type: object
+#      properties:
+#        person:
+#          $ref: '#/components/schemas/Person'
+#        hotel:
+#          $ref: '#/components/schemas/Hotel'
+    PizzaOrderRequest:
+      type: object
+      properties:
+        person:
+          $ref: '#/components/schemas/Person'
+        pizza:
+          $ref: '#/components/schemas/Pizza'
+#    BookFlightRequest:
+#      type: object
+#      properties:
+#        person:
+#          $ref: '#/components/schemas/Person'
+#        flight:
+#          $ref: '#/components/schemas/Flight'
+    PizzaDeliveryRequest:
+        type: object
+        properties:
+          person:
+            $ref: '#/components/schemas/Person'
+          delivery:
+            $ref: '#/components/schemas/Delivery'
+#    BookTravelRequest:
+#      type: object
+#      properties:
+#        person:
+#          $ref: '#/components/schemas/Person'
+#        hotel:
+#          $ref: '#/components/schemas/Hotel'
+#        flight:
+#          $ref: '#/components/schemas/Flight'
+#        paymentCard:
+#          $ref: '#/components/schemas/PaymentCard'
+    PizzaCreationRequest:
+      type: object
+      properties:
+        person:
+          $ref: '#/components/schemas/Person'
+        pizza:
+          $ref: '#/components/schemas/Pizza'
+        delivery:
+          $ref: '#/components/schemas/Delivery'
+    ExceptionResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+
