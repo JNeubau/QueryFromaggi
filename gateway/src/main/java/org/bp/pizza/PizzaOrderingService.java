@@ -34,14 +34,26 @@ public class PizzaOrderingService extends RouteBuilder {
 	@Autowired
 	StateService pizzaStateService;
 
+	@org.springframework.beans.factory.annotation.Value("${travel.kafka.server}")
+	private String travelKafkaServer;
+
+	@org.springframework.beans.factory.annotation.Value("${travel.service.type}")
+	private String travelServiceType;
+
     @Override
     public void configure() throws Exception {
-		pizzaCreationExceptionHandlers();
-		deliveryExceptionHandlers();
-        gateway();
-        PizzaCreation();
-		delivery();
-		payment();
+		if (travelServiceType.equals("all") || travelServiceType.equals("pizza"))
+			pizzaCreationExceptionHandlers();
+		if (travelServiceType.equals("all") || travelServiceType.equals("delivery"))
+			deliveryExceptionHandlers();
+		if (travelServiceType.equals("all") || travelServiceType.equals("gateway"))
+			gateway();
+		if (travelServiceType.equals("all") || travelServiceType.equals("pizza"))
+			PizzaCreation();
+		if (travelServiceType.equals("all") || travelServiceType.equals("delivery"))
+			delivery();
+		if (travelServiceType.equals("all") || travelServiceType.equals("payment"))
+			payment();
 //		setCompleted();
     }
 
@@ -86,7 +98,7 @@ public class PizzaOrderingService extends RouteBuilder {
         from("direct:OrderPizzaRequest").routeId("OrderPizzaRequest")
                 .log("brokerTopic fired")
                 .marshal().json()
-                .to("kafka:PizzaReqTopic?brokers=localhost:9092");
+				.to("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
     }
 
 	private void pizzaCreationExceptionHandlers() {
@@ -101,7 +113,7 @@ public class PizzaOrderingService extends RouteBuilder {
         .marshal().json()
 		.to("stream:out")
 		.setHeader("serviceType", constant("pizza"))
-		.to("kafka:PizzaOrderingFailTopic?brokers=localhost:9092")
+				.to("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
 		.handled(true);
     }
 
@@ -117,12 +129,12 @@ public class PizzaOrderingService extends RouteBuilder {
 	    .marshal().json()
 		.to("stream:out")
 		.setHeader("serviceType", constant("delivery"))
-		.to("kafka:PizzaOrderingFailTopic?brokers=localhost:9092")
+				.to("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
 		.handled(true);
 	}
 
 	private void PizzaCreation() {
-		from("kafka:PizzaReqTopic?brokers=localhost:9092").routeId("createPizza")
+		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("createPizza")
 		.log("fired createPizza")
 		.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
 		.process(
@@ -156,10 +168,10 @@ public class PizzaOrderingService extends RouteBuilder {
 			.to("direct:pizzaCreationCompensationAction")
 		.otherwise()
 			.setHeader("serviceType", constant("pizza"))
-			.to("kafka:PizzaInfoTopic?brokers=localhost:9092")
+				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
 		.endChoice();
 
-		from("kafka:PizzaOrderingFailTopic?brokers=localhost:9092").routeId("pizzaCreationCompensation")
+		from("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("pizzaCreationCompensation")
 		.log("fired pizzaCreationCompensation")
 		.unmarshal().json(JsonLibrary.Jackson, ExceptionResponse.class)
 		.choice()
@@ -178,11 +190,11 @@ public class PizzaOrderingService extends RouteBuilder {
 		from("direct:pizzaCreationCompensationAction").routeId("pizzaCreationCompensationAction")
 		.log("fired pizzaCreationCompensationAction")
 		.to("stream:out");
-//		.to("kafka:finalize?brokers=localhost:9092");
+//		.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 
 	private void delivery() {
-		from("kafka:PizzaReqTopic?brokers=localhost:9092").routeId("makeDelivery")
+		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("makeDelivery")
 		.log("fired makeDelivery")
 		.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
 		.process(
@@ -217,10 +229,10 @@ public class PizzaOrderingService extends RouteBuilder {
 			.to("direct:makeDeliveryCompensationAction")
 		.otherwise()
 			.setHeader("serviceType", constant("delivery"))
-			.to("kafka:PizzaInfoTopic?brokers=localhost:9092")
+				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
 		.endChoice();
 
-		from("kafka:PizzaOrderingFailTopic?brokers=localhost:9092").routeId("makeDeliveryCompensation")
+		from("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("makeDeliveryCompensation")
 		.log("fired makeDeliveryCompensation")
 		.unmarshal().json(JsonLibrary.Jackson, ExceptionResponse.class)
         .choice()
@@ -239,11 +251,11 @@ public class PizzaOrderingService extends RouteBuilder {
 		from("direct:makeDeliveryCompensationAction").routeId("makeDeliveryCompensationAction")
 		.log("fired makeDeliveryCompensationAction")
 		.to("stream:out")
-		.to("kafka:finalize?brokers=localhost:9092");
+				.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 
 	private void payment() {
-		from("kafka:PizzaInfoTopic?brokers=localhost:9092").routeId("paymentPizzaInfo")
+		from("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentPizzaInfo")
 				.log("fired paymentPizzaInfo")
 				.unmarshal().json(JsonLibrary.Jackson, PizzaInfo.class)
 				.process(
@@ -259,7 +271,7 @@ public class PizzaOrderingService extends RouteBuilder {
 				.when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
 				.endChoice();
 
-		from("kafka:PizzaReqTopic?brokers=localhost:9092").routeId("paymentPizzaReq")
+		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentPizzaReq")
 				.log("fired paymentPizzaReq")
 				.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
 				.process(
@@ -294,11 +306,11 @@ public class PizzaOrderingService extends RouteBuilder {
 			from("direct:notification").routeId("notification")
 			.log("fired notification")
 			.to("stream:out");
-//			.to("kafka:finalize?brokers=localhost:9092");
+//			.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 
 //	private void setCompleted() {
-//		from("kafka:finalize?brokers=localhost:9092").routeId("finalize")
+//		from("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("finalize")
 //			.log("fired finalize")
 ////			.to("stream:out")
 //				.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
@@ -334,7 +346,7 @@ public class PizzaOrderingService extends RouteBuilder {
 ////				.to("direct:makeDeliveryCompensationAction")
 ////				.otherwise()
 ////				.setHeader("serviceType", constant("delivery"))
-////				.to("kafka:PizzaInfoTopic?brokers=localhost:9092")
+////				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
 ////				.endChoice();
 //    }
 
