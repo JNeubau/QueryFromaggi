@@ -3,6 +3,7 @@
 - PizzaInfoTopic - Pizza information
 - DeliveryInfoTopic - Delivery information
 - PizzaOrderingFailTopic - Failed pizza ordering
+- finalize - Finalize order and ste status COMPLETED
 
 
 # State Machine
@@ -12,6 +13,8 @@ Stan przetwarzania danej instancji usługi, czyli węzeł grafu zmiany stanów
 - Processign Event ** - 
 zdarzenie, które zmienia stan danej instancji usługi, zyli krawędź skierowana grafu zmiany stanów
 
+![State Diagram](images/states.png)
+*State Diagram*
 
 ### Kafka setup for Windows
 1. Download Kafka:  

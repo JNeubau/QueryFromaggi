@@ -42,6 +42,7 @@ public class PizzaOrderingService extends RouteBuilder {
         PizzaCreation();
 		delivery();
 		payment();
+//		setCompleted();
     }
 
     private void gateway() {
@@ -177,6 +178,7 @@ public class PizzaOrderingService extends RouteBuilder {
 		from("direct:pizzaCreationCompensationAction").routeId("pizzaCreationCompensationAction")
 		.log("fired pizzaCreationCompensationAction")
 		.to("stream:out");
+//		.to("kafka:finalize?brokers=localhost:9092");
 	}
 
 	private void delivery() {
@@ -236,60 +238,104 @@ public class PizzaOrderingService extends RouteBuilder {
 
 		from("direct:makeDeliveryCompensationAction").routeId("makeDeliveryCompensationAction")
 		.log("fired makeDeliveryCompensationAction")
-		.to("stream:out");
+		.to("stream:out")
+		.to("kafka:finalize?brokers=localhost:9092");
 	}
 
 	private void payment() {
 		from("kafka:PizzaInfoTopic?brokers=localhost:9092").routeId("paymentPizzaInfo")
-		.log("fired paymentPizzaInfo")
-		.unmarshal().json(JsonLibrary.Jackson, PizzaInfo.class)
-		.process(
-				(exchange) -> {
-					String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-					boolean isReady= paymentService.addPizzaInfo(
-							pizzaCreationId,
-							exchange.getMessage().getBody(PizzaInfo.class),
-							exchange.getMessage().getHeader("serviceType", String.class));
-					exchange.getMessage().setHeader("isReady", isReady);
-				})
-		.choice()
-        .when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
-        .endChoice();
+				.log("fired paymentPizzaInfo")
+				.unmarshal().json(JsonLibrary.Jackson, PizzaInfo.class)
+				.process(
+						(exchange) -> {
+							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+							boolean isReady = paymentService.addPizzaInfo(
+									pizzaCreationId,
+									exchange.getMessage().getBody(PizzaInfo.class),
+									exchange.getMessage().getHeader("serviceType", String.class));
+							exchange.getMessage().setHeader("isReady", isReady);
+						})
+				.choice()
+				.when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
+				.endChoice();
 
 		from("kafka:PizzaReqTopic?brokers=localhost:9092").routeId("paymentPizzaReq")
-		.log("fired paymentPizzaReq")
-		.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
-		.process(
-				(exchange) -> {
-					String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-					 boolean isReady= paymentService.addPizzaOrderRequest(
-							pizzaCreationId,
-							exchange.getMessage().getBody(PizzaOrderRequest.class));
-					 exchange.getMessage().setHeader("isReady", isReady);
-				})
-		.choice()
-        .when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
-		.endChoice();
+				.log("fired paymentPizzaReq")
+				.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
+				.process(
+						(exchange) -> {
+							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+							boolean isReady = paymentService.addPizzaOrderRequest(
+									pizzaCreationId,
+									exchange.getMessage().getBody(PizzaOrderRequest.class));
+							exchange.getMessage().setHeader("isReady", isReady);
+						})
+				.choice()
+				.when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
+				.endChoice();
 
-	from("direct:finalizePayment").routeId("finalizePayment")
-	.log("fired finalizePayment")
-	.process(
-			(exchange) -> {
-				String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-				 PaymentService.PaymentData paymentData = paymentService.getPaymentData(pizzaCreationId);
-				 Float pizzaCost = paymentData.pizzaPizzaInfo.getCost();
-				 Float deliveryCost = paymentData.deliveryPizzaInfo.getCost();
-				 Float totalCost = pizzaCost + deliveryCost;
-				 PizzaInfo pizzaInfo = new PizzaInfo();
-				 pizzaInfo.setId(pizzaCreationId);
-				 pizzaInfo.setCost(totalCost);
-				 exchange.getMessage().setBody(pizzaInfo);
-			})
-	.to("direct:notification");
+		from("direct:finalizePayment").routeId("finalizePayment")
+				.log("fired finalizePayment")
+				.process(
+						(exchange) -> {
+							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+							PaymentService.PaymentData paymentData = paymentService.getPaymentData(pizzaCreationId);
+							Float pizzaCost = paymentData.pizzaPizzaInfo.getCost();
+							Float deliveryCost = paymentData.deliveryPizzaInfo.getCost();
+							Float totalCost = pizzaCost + deliveryCost;
+							PizzaInfo pizzaInfo = new PizzaInfo();
+							pizzaInfo.setId(pizzaCreationId);
+							pizzaInfo.setCost(totalCost);
+							exchange.getMessage().setHeader("pizzaCreationId", pizzaIdentifierService.getPizzaIdentifier());
+							exchange.getMessage().setBody(pizzaInfo);
+						})
+				.to("direct:notification");
 
-	from("direct:notification").routeId("notification")
-	.log("fired notification")
-	.to("stream:out");
-    }
+			from("direct:notification").routeId("notification")
+			.log("fired notification")
+			.to("stream:out");
+//			.to("kafka:finalize?brokers=localhost:9092");
+	}
+
+//	private void setCompleted() {
+//		from("kafka:finalize?brokers=localhost:9092").routeId("finalize")
+//			.log("fired finalize")
+////			.to("stream:out")
+//				.unmarshal().json(JsonLibrary.Jackson, PizzaOrderRequest.class)
+//				.process(
+//						(exchange) -> {
+//							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+//							ProcessingState previousState = deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
+////							if (previousState != ProcessingState.CANCELLED || previousState != ProcessingState.FINISHED) {
+////								PizzaInfo pi = new PizzaInfo();
+////								pi.setId(pizzaIdentifierService.getPizzaIdentifier());
+////
+////								PizzaOrderRequest por = exchange.getMessage().getBody(PizzaOrderRequest.class);
+////								if (por != null && por.getDelivery() != null &&
+////										por.getDelivery().getFrom() != null && por.getDelivery().getFrom().getAddress() != null) {
+////									String place = por.getDelivery().getFrom().getAddress();
+////									if (place.equals("Poznan")) {
+////										pi.setCost(10f);
+////									} else if (place.equals("Warsaw")) {
+////										throw new DeliveryException("Not serviced destination: " + place);
+////									} else {
+////										pi.setCost(20f);
+////									}
+////								}
+////								exchange.getMessage().setBody(pi);
+////								previousState = deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.FINISH);
+////							}
+//							exchange.getMessage().setHeader("Completed from", previousState);
+//						})
+//				.marshal().json()
+//				.to("stream:out");
+////				.choice()
+////				.when(header("previousState").isEqualTo(ProcessingState.CANCELLED))
+////				.to("direct:makeDeliveryCompensationAction")
+////				.otherwise()
+////				.setHeader("serviceType", constant("delivery"))
+////				.to("kafka:PizzaInfoTopic?brokers=localhost:9092")
+////				.endChoice();
+//    }
 
 }
