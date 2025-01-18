@@ -76,11 +76,17 @@ public class PizzaOrderingService extends RouteBuilder {
                 .param().name("body").type(body).description("The pizza to order").endParam()
                 .responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
                 .to("direct:orderPizza");
+//				.get("/order/status/{orderId}").description("Get coffee status").outType(CoffeeOrder.class)
+//				.param().name("orderId").type(RestParamType.path).description("Order id").endParam()
+//				.responseMessage().code(200).message("Coffee status").endResponseMessage()
+//				.responseMessage().code(404).message("Order not found").endResponseMessage()
+//				.to("direct:get-coffee-status");
 
         from("direct:orderPizza").routeId("orderPizza")
                 .log("orderPizza fired")
                 .process(
                         (exchange) -> {
+							PizzaOrderRequest request = exchange.getMessage().getBody(PizzaOrderRequest.class);
                     exchange.getMessage().setHeader("pizzaCreationId", pizzaIdentifierService.getPizzaIdentifier());
                 })
                 .to("direct:OrderPizzaRequest")

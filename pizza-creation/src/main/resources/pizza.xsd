@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.bp.org" 
+	xmlns:tns="http://www.bp.org" 
+	elementFormDefault="qualified"
+	xmlns:bpt="http://www.bp.org/types">
+    <import schemaLocation="bpTypes.xsd" namespace="http://www.bp.org/types"/>
+  <element name="createPizzaRequest">
+    <complexType>
+      <sequence>
+        <element name="person" type="bpt:Person"/>
+        <element name="pizza" type="bpt:Pizza"/>
+      </sequence>
+    </complexType>
+  </element>
+  <element name="createPizzaResponse" type="bpt:PizzaInfo"/>
+
+  <element name="pizzaFault" type="bpt:Fault"/>
+
+  <element name="cancelPizzaRequest">
+  	<complexType>
+  		<attribute name="pizzaId" type="int"/>
+  	</complexType>
+  </element>
+  <element name="cancelPizzaResponse" type="bpt:PizzaInfo"/>
+
+</schema>
