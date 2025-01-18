@@ -93,7 +93,7 @@
 							<inputSpec>${project.basedir}/src/main/resources/travel-booking.yaml</inputSpec>
 							<language>java</language>
 							<library>resttemplate</library>
-							<modelPackage>org.bp.pizza.model</modelPackage>
+							<modelPackage>org.bp.payment.model</modelPackage>
 							<generateApis>false</generateApis>
 							<generateSupportingFiles>false</generateSupportingFiles>
 							<generateModelDocumentation>false</generateModelDocumentation>
