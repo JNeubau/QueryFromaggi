@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://www.bp.org" 
+	xmlns:tns="http://www.bp.org" 
+	elementFormDefault="qualified"
+	xmlns:bpt="http://www.bp.org/types">
+    <import schemaLocation="bpTypes.xsd" namespace="http://www.bp.org/types"/>
+  <element name="makePaymentRequest">
+    <complexType>
+      <sequence>
+        <element name="person" type="bpt:Person"/>
+        <element name="paymentCard" type="bpt:PaymentCard"/>
+        <element name="cost" type="decimal"/>
+      </sequence>
+    </complexType>
+  </element>
+  <element name="makePaymentResponse" type="bpt:PaymentInfo"/>
+
+  <element name="paymentFault" type="bpt:Fault"/>
+
+  <element name="cancelPaymentRequest">
+  	<complexType>
+  		<attribute name="paymentId" type="int"/>
+  	</complexType>
+  </element>
+  <element name="cancelPaymentResponse" type="bpt:PaymentInfo"/>
+
+</schema>

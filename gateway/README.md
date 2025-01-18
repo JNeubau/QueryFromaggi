@@ -34,3 +34,6 @@ Invoke-WebRequest -Uri "http://www.cs.put.poznan.pl/jjezierski/AZNUv2/kafka.serv
 Start-Process -FilePath "C:\kafka\bin\windows\zookeeper-server-start.bat" -ArgumentList "C:\kafka\config\zookeeper.properties"
 Start-Process -FilePath "C:\kafka\bin\windows\kafka-server-start.bat" -ArgumentList "C:\kafka\config\server.properties"
 ```
+
+![Build Image Configuration](images/build_image_config.png)
+*Build Image Configuration*
