@@ -47,6 +47,8 @@ The API Gateway provides a RESTful interface described using OpenAPI. It include
 The entire application, including the microservices and the web application, is containerized to facilitate deployment
 and scalability.
 
+http://localhost:8090/webjars/swagger-ui/index.html?url=/api/api-doc
+
 ```bash
 docker-compose logs --follow --tail=0
 
