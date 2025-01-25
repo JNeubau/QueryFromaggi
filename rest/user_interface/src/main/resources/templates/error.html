@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error</title>
+</head>
+<body>
+    <h1>An error occurred</h1>
+    <p th:text="${error}">Error details will be displayed here.</p>
+    <p th:if="${exception != null}">
+        <strong>Exception:</strong> <span th:text="${exception.message}">Exception message will be displayed here.</span>
+    </p>
+    <p th:if="${timestamp != null}">
+        <strong>Timestamp:</strong> <span th:text="${timestamp}">Timestamp will be displayed here.</span>
+    </p>
+    <p th:if="${status != null}">
+        <strong>Status:</strong> <span th:text="${status}">Status code will be displayed here.</span>
+    </p>
+    <a href="/orderForm" th:href="@{/orderForm}">Go to new Order</a>
+</body>
+</html>
