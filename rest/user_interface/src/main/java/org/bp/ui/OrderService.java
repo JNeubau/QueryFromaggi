@@ -58,11 +58,4 @@ public class OrderService {
 
 		return orderResponse;
 	}
-
-//	@GetMapping("/order")
-//	public String showOrderForm(Model model) {
-//		model.addAttribute("orderRequest", new OrderRequest());
-//		return "order";
-//	}
-
 }

@@ -1,7 +1,10 @@
 package org.bp.ui.controller;
 
-import org.bp.ui.OrderClientService;
+import org.bp.ui.ClientService;
 import org.bp.ui.model.order.*;
+import org.bp.ui.model.payment.Amount;
+import org.bp.ui.model.payment.PaymentCard;
+import org.bp.ui.model.payment.PaymentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class OrderController {
 
     @Autowired
-    private OrderClientService orderClientService;
+    private ClientService clientService;
 
     @GetMapping("/orderForm")
     public String showOrderForm(Model model) {
@@ -25,14 +28,6 @@ public class OrderController {
         return "order";
     }
 
-//    @PostMapping("/orderForm")
-//    public String createOrderForm(@ModelAttribute OrderRequest orderRequest, Model model) {
-//        OrderResponse orderResponse = orderService.order(orderRequest);
-//        model.addAttribute("orderInfo", orderResponse);
-//        return "orderConfirmation";
-//    }
-
-//    @GetMapping("/orderConfirmation")
     @PostMapping("/orderForm")
     public String makeOrder(@ModelAttribute OrderRequest orderRequest, Model model) {
         if (orderRequest.getPizza() == null) {
@@ -48,7 +43,9 @@ public class OrderController {
             orderRequest.getDelivery().setTo(new Point());
         }
 
-        orderRequest.getPizza().setPrize(BigDecimal.valueOf(orderRequest.getPizza().getSize() + 20));
+        BigDecimal newPrize = BigDecimal.valueOf(orderRequest.getPizza().getSize() + 20
+                + orderRequest.getPizza().getIngredients().length() * 3);
+        orderRequest.getPizza().setPrize(newPrize);
 
         OffsetDateTime now = OffsetDateTime.now();
         int randomMinutes = ThreadLocalRandom.current().nextInt(30, 61);
@@ -58,19 +55,19 @@ public class OrderController {
         orderRequest.getDelivery().getFrom().setDate(prepTime);
         orderRequest.getDelivery().getTo().setDate(prepTime.plusMinutes(30));
 
-        OrderResponse orderResponse = orderClientService.placeOrder(orderRequest);
+        OrderResponse orderResponse = clientService.placeOrder(orderRequest);
+
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setAmount(new Amount());
+        paymentRequest.setPaymentCard(new PaymentCard());
+        paymentRequest.getAmount().setValue(newPrize);
+        model.addAttribute("paymentRequest", paymentRequest);
 
         model.addAttribute("orderRequest", orderRequest);
         model.addAttribute("orderResponse", orderResponse);
+        model.addAttribute("paymentRequest", paymentRequest);
         return "orderConfirmation";
     }
-
-//    @PostMapping("/orderForm")
-//    public String createOrderForm(@ModelAttribute OrderRequest orderRequest, Model model) {
-//        OrderResponse orderResponse = orderClientService.placeOrder(orderRequest);
-//        model.addAttribute("orderInfo", orderResponse);
-//        return "orderConfirmation";
-//    }
 
     @GetMapping("/cancelOrder")
     public String cancelOrder(@ModelAttribute OrderRequest orderRequest, Model model) {

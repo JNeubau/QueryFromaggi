@@ -7,18 +7,26 @@
 <div th:insert="header :: header"></div>
 
 <h1>Payment Form</h1>
-<form action="#" th:action="@{/makePayment}" th:object="${paymentRequest}" method="post">
-    <label for="transactionId">Transaction ID:</label>
-    <input type="text" id="transactionId" th:field="*{transactionId}" /><br/>
+<form action="#" th:action="@{/paymentForm}" th:object="${paymentRequest}" method="post">
+    <label for="name">Cardholder Name:</label>
+    <input type="text" id="name" th:field="*{paymentCard.name}" /><br/>
 
-    <label for="transactionDate">Transaction Date:</label>
-    <input type="date" id="transactionDate" th:field="*{transactionDate}" /><br/>
+    <label for="validTo">Valid To:</label>
+    <input type="text" id="validTo" th:field="*{paymentCard.validTo}" /><br/>
+
+    <label for="number">Card Number:</label>
+    <input type="text" id="number" th:field="*{paymentCard.number}" /><br/>
 
     <label for="amount">Amount:</label>
-    <input type="text" id="amount" th:field="*{amount.value}" /><br/>
+    <input type="text" id="amount" th:field="*{amount.value}" readonly /><br/>
 
     <label for="currency">Currency:</label>
-    <input type="text" id="currency" th:field="*{amount.currency}" /><br/>
+    <select id="currency" th:field="*{amount.currency}">
+        <option value="PLN">PLN</option>
+        <option value="USD">USD</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+    </select><br/>
 
     <button type="submit">Submit Payment</button>
 </form>
