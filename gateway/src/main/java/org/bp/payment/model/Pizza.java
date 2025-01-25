@@ -14,6 +14,7 @@ package org.bp.payment.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -30,7 +31,7 @@ public class Pizza {
   private String ingredients = null;
 
   @JsonProperty("prize")
-  private Float prize = null;
+  private BigDecimal prize = null;
 
   @JsonProperty("prepTime")
   private OffsetDateTime prepTime = null;
@@ -71,7 +72,7 @@ public class Pizza {
     this.size = size;
   }
 
-  public Pizza prize(Float prize) {
+  public Pizza prize(BigDecimal prize) {
     this.prize = prize;
     return this;
   }
@@ -81,11 +82,11 @@ public class Pizza {
    * @return country
   **/
 
-  public Float getPrize() {
+  public BigDecimal getPrize() {
     return prize;
   }
 
-  public void setPrize(Float prize) {
+  public void setPrize(BigDecimal prize) {
     this.prize = prize;
   }
 

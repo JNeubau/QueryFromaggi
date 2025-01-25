@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Form</title>
+</head>
+<body>
+<div th:insert="header :: header"></div>
+
+<h1>Order Form</h1>
+<form action="#" th:action="@{/orderForm}" th:object="${orderRequest}" method="post">
+    <h2>Person Details</h2>
+    <label for="personName">Person Name:</label>
+    <input type="text" id="personName" th:field="*{person.name}" /><br/>
+
+    <label for="personEmail">Person Email:</label>
+    <input type="text" id="personEmail" th:field="*{person.email}" /><br/>
+
+
+    <h2>Pizza Details</h2>
+    <label for="pizzaName">Pizza:</label>
+    <select id="pizzaName" th:field="*{pizza.name}">
+        <option value="margarita">Margarita</option>
+        <option value="chorizo">Chorizo</option>
+        <option value="Quatro Fromaggi">Quatro Fromaggi</option>
+    </select><br/>
+
+    <label for="pizzaSize">Pizza size:</label>
+    <select id="pizzaSize" th:field="*{pizza.size}">
+        <option value="20.0">20</option>
+        <option value="30.0">30</option>
+        <option value="40.0">40</option>
+    </select><br/>
+
+    <label for="pizzaIngredients">Additional Ingredients:</label>
+    <input type="text" id="pizzaIngredients" th:field="*{pizza.ingredients}" /><br/>
+
+
+    <h2>Delivery Details:</h2>
+    <label for="deliveryToAddress">City:</label>
+    <select id="deliveryToAddress" th:field="*{delivery.to.address}">
+        <option value="Poznan">Poznan</option>
+        <option value="Warsaw">Warsaw</option>
+        <option value="Cracow">Cracow</option>
+    </select><br/>
+
+    <button type="submit">Submit Order</button>
+    <button type="button" onclick="window.location.href='/clearOrder'">Cancel Order</button>
+</form>
+</body>
+</html>

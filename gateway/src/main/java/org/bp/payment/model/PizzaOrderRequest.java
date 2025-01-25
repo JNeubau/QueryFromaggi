@@ -13,7 +13,7 @@ public class PizzaOrderRequest {
   @JsonProperty("person")
   private Person person = null;
 
-  @JsonProperty("pizza")
+  @JsonProperty("order")
   private Pizza pizza = null;
 
   @JsonProperty("delivery")
@@ -125,7 +125,7 @@ public class PizzaOrderRequest {
     sb.append("class PizzaOrderRequest {\n");
     
     sb.append("    person: ").append(toIndentedString(person)).append("\n");
-    sb.append("    pizza: ").append(toIndentedString(pizza)).append("\n");
+    sb.append("    order: ").append(toIndentedString(pizza)).append("\n");
     sb.append("    delivery: ").append(toIndentedString(delivery)).append("\n");
 //    sb.append("    paymentCard: ").append(toIndentedString(paymentCard)).append("\n");
     sb.append("}");

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Form</title>
+</head>
+<body>
+<div th:insert="header :: header"></div>
+
+<form action="#" th:action="@{/paymentForm}" th:object="${orderResponse}" method="post">
+    <h1>Order Status Details</h1>
+    <label for="orderId">Order ID:</label>
+    <input type="text" id="orderId" th:field="*{orderId}" readonly /><br/>
+
+    <label for="orderStatus">Status:</label>
+    <input type="text" id="orderStatus" th:field="*{orderStatus}" readonly /><br/>
+
+    <label for="orderDescription">Description:</label>
+    <input type="text" id="orderDescription" th:field="*{orderDescription}" readonly /><br/>
+</form>
+
+<h1>Order Confirmation</h1>
+<form action="#" th:action="@{/paymentForm}" th:object="${orderRequest}" method="post">
+    <h2>Person Details</h2>
+    <label for="personName">Person Name:</label>
+    <input type="text" id="personName" th:field="*{person.name}" readonly /><br/>
+
+    <label for="personEmail">Person Email:</label>
+    <input type="text" id="personEmail" th:field="*{person.email}" readonly /><br/>
+
+    <h2>Pizza Details</h2>
+    <label for="pizzaName">Pizza:</label>
+    <input type="text" id="pizzaName" th:field="*{pizza.name}" readonly /><br/>
+
+    <label for="pizzaSize">Pizza size:</label>
+    <input type="number" id="pizzaSize" th:field="*{pizza.size}" readonly /><br/>
+
+    <label for="pizzaIngredients">Additional Ingredients:</label>
+    <input type="text" id="pizzaIngredients" th:field="*{pizza.ingredients}" readonly /><br/>
+
+    <label for="pizzaPrize">Prize:</label>
+    <input type="number" name="pizzaPrize" id="pizzaPrize" th:field="*{pizza.prize}" readonly />
+<!--    <input type="hidden" name="pizzaPrize" th:value="*{pizza.prize}" />-->
+    <br/>
+
+    <h2>Delivery Details:</h2>
+    <h4>Ready in Pizzeria</h4>
+    <label for="deliveryFromAddress">City:</label>
+    <input type="text" id="deliveryFromAddress" th:field="*{delivery.from.address}" readonly /><br/>
+
+    <label for="deliveryFromDate">Time:</label>
+    <input type="text" id="deliveryFromDate" th:field="*{delivery.from.date}" readonly /><br/>
+
+    <h4>In your home</h4>
+    <label for="deliveryToAddress">City:</label>
+    <input type="text" id="deliveryToAddress" th:field="*{delivery.to.address}" readonly /><br/>
+
+    <label for="deliveryToDate">Time:</label>
+    <input type="text" id="deliveryToDate" th:field="*{delivery.to.date}" readonly /><br/>
+
+<!--    <button type="submit">Pay</button>-->
+</form>
+
+
+<h1>Payment Form</h1>
+<form action="#" th:action="@{/paymentForm}" th:object="${paymentRequest}" method="post">
+    <label for="name">Cardholder Name:</label>
+    <input type="text" id="name" th:field="*{paymentCard.name}" /><br/>
+
+    <label for="validTo">Valid To:</label>
+    <input type="text" id="validTo" th:field="*{paymentCard.validTo}" /><br/>
+
+    <label for="number">Card Number:</label>
+    <input type="text" id="number" th:field="*{paymentCard.number}" /><br/>
+
+    <label for="amount">Amount:</label>
+    <input type="text" id="amount" th:field="*{amount.value}" readonly /><br/>
+
+    <label for="currency">Currency:</label>
+    <select id="currency" th:field="*{amount.currency}">
+        <option value="PLN">PLN</option>
+        <option value="USD">USD</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+    </select><br/>
+
+    <button type="submit">Submit Payment</button>
+</form>
+
+</body>
+</html>

@@ -54,3 +54,7 @@ docker-compose logs --follow --tail=0
 
 docker compose up -d
 ```
+
+## Architecture
+![architecture](Architecture_pic/architecure.png)
+*Architectural Design*
