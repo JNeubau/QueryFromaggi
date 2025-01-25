@@ -31,7 +31,7 @@ public class PaymentService {
 	                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PaymentResponse.class))}),
 	                @ApiResponse(responseCode = "400", description = "Bad Request",
 	                        content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ExceptionResponse.class))})
-	            })		
+	            })
 		public PaymentResponse payment(
 				@org.springframework.web.bind.annotation.RequestBody PaymentRequest paymentRequest) {
 			if (paymentRequest !=null && paymentRequest.getAmount()!=null
@@ -39,13 +39,14 @@ public class PaymentService {
 					&& paymentRequest.getAmount().getValue().compareTo(new BigDecimal(0))<=0) {
 
 				throw new PaymentException("Amount value must be positive");
-				
+
 			}
-				
+
 			PaymentResponse paymentResponse = new PaymentResponse();
 			paymentResponse.setTransactionDate(new Date());
 			paymentResponse.setTransactionId(200);
 			return paymentResponse;
 		}
+
 
 }

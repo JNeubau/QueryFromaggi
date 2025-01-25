@@ -22,4 +22,14 @@ public class Point {
     public void setDate(OffsetDateTime date) {
         this.date = date;
     }
+
+    public Point address(String address) {
+        this.address = address;
+        return this;
+    }
+
+    public Point date(OffsetDateTime date) {
+        this.date = date;
+        return this;
+    }
 }

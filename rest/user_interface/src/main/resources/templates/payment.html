@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Form</title>
+</head>
+<body>
+<div th:insert="header :: header"></div>
+
+<h1>Payment Form</h1>
+<form action="#" th:action="@{/makePayment}" th:object="${paymentRequest}" method="post">
+    <label for="transactionId">Transaction ID:</label>
+    <input type="text" id="transactionId" th:field="*{transactionId}" /><br/>
+
+    <label for="transactionDate">Transaction Date:</label>
+    <input type="date" id="transactionDate" th:field="*{transactionDate}" /><br/>
+
+    <label for="amount">Amount:</label>
+    <input type="text" id="amount" th:field="*{amount.value}" /><br/>
+
+    <label for="currency">Currency:</label>
+    <input type="text" id="currency" th:field="*{amount.currency}" /><br/>
+
+    <button type="submit">Submit Payment</button>
+</form>
+</body>
+</html>

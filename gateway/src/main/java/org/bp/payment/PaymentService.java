@@ -52,10 +52,6 @@ public class PaymentService {
 		}
 		return paymentData;
 	}
-
-	
-
-
 	
 
 }
