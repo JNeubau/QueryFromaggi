@@ -35,7 +35,7 @@ services:
       - db
     environment:
       TRAVEL_KAFKA_SERVER: kafka:9092
-      TRAVEL_SERVICE_TYPE: pizza
+      TRAVEL_SERVICE_TYPE: order
       DATASOURCE_URL: jdbc:postgresql://db:5432/db
       DATASOURCE_USERNAME: demo
       DATASOURCE_PASSWORD: demo
@@ -69,4 +69,11 @@ services:
       - 'POSTGRES_USER=demo'
     ports:
       - '5432:5432'
-
+  user_service:
+    build:
+      context: ./rest/user_interface
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - db
