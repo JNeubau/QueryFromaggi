@@ -60,12 +60,27 @@ public class PaymentService {
 				e.printStackTrace(); // Add this line to print the stack trace
 				throw new PaymentException("Error occurred while processing the order: " + e.getMessage());
 			}
-
-//			PaymentResponse paymentResponse = new PaymentResponse();
-//			paymentResponse.setTransactionDate(new Date());
-//			paymentResponse.setTransactionId(200);
-//			return paymentResponse;
 		}
 
+//		@PostMapping("/test")
+//		@Operation(
+//				summary = "test operation",
+//				description = "operation for payment",
+//				responses = {
+//						@ApiResponse(responseCode = "200",
+//								description = "OK",
+//								content = {@Content(mediaType = "application/json", schema = @Schema(implementation = String.class))}),
+//						@ApiResponse(responseCode = "400", description = "Bad Request",
+//								content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ExceptionResponse.class))})
+//				})
+//		public PaymentResponse test(@org.springframework.web.bind.annotation.RequestBody String str) {
+//			try{
+//				return producerTemplate.requestBody("http://gateway:8090/api/microOrdering/test", "", String.class);
+//			} catch (Exception e) {
+//				System.err.println("Error occurred while processing the payment: " + e.getMessage());
+//				e.printStackTrace(); // Add this line to print the stack trace
+//				throw new PaymentException("Error occurred while processing the order: " + e.getMessage());
+//			};
+//		}
 
 }

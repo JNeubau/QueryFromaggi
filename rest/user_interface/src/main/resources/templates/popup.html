@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Popup</title>
+    <style>
+        #popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: yellow;
+            padding: 20px;
+            border: 1px solid black;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div th:fragment="popupContent">
+    <div id="popup">
+        <h3 th:text="${message}"></h3>
+        <button onclick="closePopup()">Close</button>
+    </div>
+</div>
+</body>
+</html>

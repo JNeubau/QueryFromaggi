@@ -158,7 +158,7 @@ public class Pizza {
     sb.append("    city: ").append(toIndentedString(size)).append("\n");
     sb.append("    country: ").append(toIndentedString(prize)).append("\n");
     sb.append("    ingredients: ").append(toIndentedString(ingredients)).append("\n");
-    sb.append("    checkOut: ").append(toIndentedString(prepTime)).append("\n");
+    sb.append("    prepTime: ").append(toIndentedString(prepTime)).append("\n");
     sb.append("}");
     return sb.toString();
   }

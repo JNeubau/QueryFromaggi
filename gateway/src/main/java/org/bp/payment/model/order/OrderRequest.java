@@ -14,7 +14,7 @@ public class OrderRequest {
   @JsonProperty("person")
   private Person person = null;
 
-  @JsonProperty("order")
+  @JsonProperty("pizza")
   private Pizza pizza = null;
 
   @JsonProperty("delivery")

@@ -14,19 +14,26 @@ public class Utils {
 		return pizzaInfo;
 	}
 
-	public static OrderResponse createOrderResponse() {
+	public static OrderResponse createOrderResponse(String pizzaId) {
 		OrderResponse orderResponse = new OrderResponse();
-		orderResponse.setOrderId("1234");
+		orderResponse.setOrderId(pizzaId);
 		orderResponse.setOrderStatus("SUCCESSFUL ORDER");
 		orderResponse.setOrderDescription("Order placed successfully");
 		return orderResponse;
 	}
 
-	public static PaymentResponse createPaymentResponse() {
+	public static OrderResponse createErrorOrderResponse(String pizzaId, String msg) {
+		OrderResponse orderResponse = new OrderResponse();
+		orderResponse.setOrderId(pizzaId);
+		orderResponse.setOrderStatus("ERROR ORDER");
+		orderResponse.setOrderDescription("Order unsuccessful: " + msg);
+		return orderResponse;
+	}
+
+	public static PaymentResponse createPaymentResponse(int paymentId) {
 		PaymentResponse paymentResponse = new PaymentResponse();
-		paymentResponse.setTransactionId(2137);
+		paymentResponse.setTransactionId(paymentId);
 		paymentResponse.setTransactionDate(new Date());
 		return paymentResponse;
 	}
-
 }

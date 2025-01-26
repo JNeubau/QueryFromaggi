@@ -24,5 +24,22 @@ public class PaymentResponse {
 		this.transactionDate = transactionDate;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PaymentResponse {\n");
+
+		sb.append("    transactionId: ").append(toIndentedString(transactionId)).append("\n");
+		sb.append("    transactionDate: ").append(toIndentedString(transactionDate)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
+
+	private String toIndentedString(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 	
 }
