@@ -1,9 +1,8 @@
 
-package org.bp.payment.model;
+package org.bp.payment.model.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.OffsetDateTime;
 import java.util.Objects;
 
 public class OrderResponse {

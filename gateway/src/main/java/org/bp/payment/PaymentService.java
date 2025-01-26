@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
-import org.bp.payment.model.OrderRequest;
+import org.bp.payment.model.order.OrderRequest;
 import org.bp.payment.model.PizzaInfo;
 import org.springframework.stereotype.Service;
 

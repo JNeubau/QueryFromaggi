@@ -1,8 +1,9 @@
-package org.bp.payment.model;
+package org.bp.payment.model.order;
 
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.bp.payment.model.delivery.Delivery;
 
 /**
  * OrderRequest

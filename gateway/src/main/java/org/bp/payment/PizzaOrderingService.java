@@ -1,6 +1,5 @@
 package org.bp.payment;
 
-import org.apache.camel.CamelExchangeException;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -8,6 +7,10 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestParamType;
 import org.bp.payment.model.*;
+import org.bp.payment.model.order.OrderRequest;
+import org.bp.payment.model.order.OrderResponse;
+import org.bp.payment.model.payment.PaymentRequest;
+import org.bp.payment.model.payment.PaymentResponse;
 import org.bp.payment.state.ProcessingEvent;
 import org.bp.payment.state.ProcessingState;
 import org.bp.payment.state.StateService;
@@ -18,8 +21,6 @@ import org.bp.payment.exceptions.PizzaException;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-
-import static org.apache.camel.model.rest.RestParamType.body;
 
 @Component
 public class PizzaOrderingService extends RouteBuilder {
@@ -114,7 +115,14 @@ public class PizzaOrderingService extends RouteBuilder {
                 .param().name("body").type(RestParamType.body).description("The order to order").endParam()
                 .responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
 				.responseMessage().code(400).message("Bad Request").endResponseMessage()
-                .to("direct:orderPizza2");
+                .to("direct:orderPizza2")
+				.post("/payment").description("Handle Payment")
+				.type(OrderRequest.class)
+				.outType(OrderResponse.class)
+				.param().name("body").type(RestParamType.body).description("The order to order").endParam()
+				.responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
+				.responseMessage().code(400).message("Bad Request").endResponseMessage()
+				.to("direct:payment2");
 
 		from("direct:orderPizza2").routeId("orderPizza")
 				.log("OrderPizza2 fired")
@@ -132,6 +140,23 @@ public class PizzaOrderingService extends RouteBuilder {
 					}
 				})
 				.log("Processed order response: ${body}");
+
+		from("direct:payment2").routeId("payment")
+				.log("payment fired")
+				.process(exchange -> {
+					try {
+						PaymentRequest request = exchange.getMessage().getBody(PaymentRequest.class);
+						PaymentResponse response = Utils.createPaymentResponse();
+						exchange.getMessage().setBody(response);
+					} catch (CamelExecutionException e) {
+						System.err.println("Exception occurred during camel on the exchange: " + e.getMessage());
+						throw e;
+					} catch (Exception e) {
+						System.err.println("Exception occurred during execution on the exchange: " + e.getMessage());
+						throw e;
+					}
+				})
+				.log("Processed payment response: ${body}");
     }
 
 	private void pizzaCreationExceptionHandlers() {

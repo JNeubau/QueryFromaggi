@@ -38,7 +38,7 @@ public class OrderService {
 	private ProducerTemplate producerTemplate;
 
 	@Autowired
-	private ObjectMapper objectMapper; // Add this line
+	private ObjectMapper objectMapper;
 
 	@PostMapping("/order")
 	@Operation(
@@ -65,11 +65,6 @@ public class OrderService {
 			&& orderRequest.getPerson().getEmail().isEmpty()) {
 			throw new UiException("Person email can not be empty");
 		}
-
-//		OrderResponse orderResponse = new OrderResponse();
-//		orderResponse.setOrderId("200");
-//		orderResponse.setOrderStatus("Pizza ordered correctly");
-//		orderResponse.setOrderDescription("Pizza ordered");
 
 		try {
 			String orderRequestJson = objectMapper.writeValueAsString(orderRequest);

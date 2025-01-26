@@ -1,6 +1,7 @@
 package org.bp.ui;
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.ProducerTemplate;
 import org.bp.ui.model.order.OrderResponse;
 import org.bp.ui.model.order.UiException;
@@ -28,6 +29,9 @@ public class PaymentService {
 		@Autowired
 		private ProducerTemplate producerTemplate;
 
+		@Autowired
+		private ObjectMapper objectMapper;
+
 		@PostMapping("/payment")
 	    @Operation(
 	            summary = "payment operation",
@@ -44,14 +48,16 @@ public class PaymentService {
 			if (paymentRequest !=null && paymentRequest.getAmount()!=null
 					&& paymentRequest.getAmount().getValue()!=null
 					&& paymentRequest.getAmount().getValue().compareTo(new BigDecimal(0))<=0) {
-
 				throw new PaymentException("Amount value must be positive");
-
 			}
 
 			try {
-				return producerTemplate.requestBody("direct:microBooking", paymentRequest, PaymentResponse.class);
+				String paymentRequestJson = objectMapper.writeValueAsString(paymentRequest);
+				String responseJson = producerTemplate.requestBody("http://gateway:8090/api/microOrdering/payment", paymentRequestJson, String.class);
+				return objectMapper.readValue(responseJson, PaymentResponse.class);
 			} catch (Exception e) {
+				System.err.println("Error occurred while processing the payment: " + e.getMessage());
+				e.printStackTrace(); // Add this line to print the stack trace
 				throw new PaymentException("Error occurred while processing the order: " + e.getMessage());
 			}
 
