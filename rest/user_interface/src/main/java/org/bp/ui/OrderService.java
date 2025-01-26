@@ -6,16 +6,24 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.apache.camel.ProducerTemplate;
 import org.bp.ui.model.order.UiException;
 import org.bp.ui.model.order.OrderRequest;
 import org.bp.ui.model.order.OrderResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.stereotype.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @org.springframework.web.bind.annotation.RestController
 //@Controller
@@ -25,6 +33,13 @@ import java.math.BigDecimal;
         description = "Service for ordering pizza and delivery"))
 
 public class OrderService {
+
+	@Autowired
+	private ProducerTemplate producerTemplate;
+
+	@Autowired
+	private ObjectMapper objectMapper; // Add this line
+
 	@PostMapping("/order")
 	@Operation(
 			summary = "ordering operation",
@@ -51,11 +66,26 @@ public class OrderService {
 			throw new UiException("Person email can not be empty");
 		}
 
-		OrderResponse orderResponse = new OrderResponse();
-		orderResponse.setOrderId("200");
-		orderResponse.setOrderStatus("Pizza ordered correctly");
-		orderResponse.setOrderDescription("Pizza ordered");
+//		OrderResponse orderResponse = new OrderResponse();
+//		orderResponse.setOrderId("200");
+//		orderResponse.setOrderStatus("Pizza ordered correctly");
+//		orderResponse.setOrderDescription("Pizza ordered");
 
-		return orderResponse;
+		try {
+			String orderRequestJson = objectMapper.writeValueAsString(orderRequest);
+			String responseJson = producerTemplate.requestBody("http://gateway:8090/api/microOrdering/order", orderRequestJson, String.class);
+			return objectMapper.readValue(responseJson, OrderResponse.class);
+		} catch (Exception e) {
+			System.err.println("Error occurred while processing the order: " + e.getMessage());
+			e.printStackTrace(); // Add this line to print the stack trace
+			throw new UiException("Error occurred while processing the order: " + e.getMessage());
+		}
+	}
+
+	@ExceptionHandler(UiException.class)
+	public ExceptionResponse handleUiException(UiException ex) {
+		// Log the exception
+		System.err.println("Handling UI exception: " + ex.getMessage());
+		return new ExceptionResponse(Date.from(Instant.now()), ex.getLocalizedMessage(), "Error occurred while processing the order: " + ex.getMessage());
 	}
 }

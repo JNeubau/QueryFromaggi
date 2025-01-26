@@ -15,8 +15,7 @@ public class PaymentCreationEndpoint implements PaymentCreation {
     public PaymentInfo makePayment(MakePaymentRequest payload) throws PaymentFaultMsg {
         if (payload != null &&
                 payload.getPaymentCard().getName() != null &&
-                payload.getPerson().getName() != null &&
-                payload.getPerson().getName().equals(payload.getPaymentCard().getName())) {
+                payload.getPerson().getName() != null ) {
             Fault paymentFault = new Fault();
             paymentFault.setCode(400);
             paymentFault.setText("Data is incorrect");

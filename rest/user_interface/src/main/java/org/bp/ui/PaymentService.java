@@ -1,7 +1,9 @@
 package org.bp.ui;
 import java.math.BigDecimal;
-import java.util.Date;
 
+import org.apache.camel.ProducerTemplate;
+import org.bp.ui.model.order.OrderResponse;
+import org.bp.ui.model.order.UiException;
 import org.bp.ui.model.payment.PaymentException;
 import org.bp.ui.model.payment.PaymentRequest;
 import org.bp.ui.model.payment.PaymentResponse;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @org.springframework.web.bind.annotation.RestController
@@ -21,6 +24,10 @@ import org.springframework.web.bind.annotation.PostMapping;
         description = "Service for payment"))
 
 public class PaymentService {
+
+		@Autowired
+		private ProducerTemplate producerTemplate;
+
 		@PostMapping("/payment")
 	    @Operation(
 	            summary = "payment operation",
@@ -42,10 +49,16 @@ public class PaymentService {
 
 			}
 
-			PaymentResponse paymentResponse = new PaymentResponse();
-			paymentResponse.setTransactionDate(new Date());
-			paymentResponse.setTransactionId(200);
-			return paymentResponse;
+			try {
+				return producerTemplate.requestBody("direct:microBooking", paymentRequest, PaymentResponse.class);
+			} catch (Exception e) {
+				throw new PaymentException("Error occurred while processing the order: " + e.getMessage());
+			}
+
+//			PaymentResponse paymentResponse = new PaymentResponse();
+//			paymentResponse.setTransactionDate(new Date());
+//			paymentResponse.setTransactionId(200);
+//			return paymentResponse;
 		}
 
 

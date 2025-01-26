@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
-import org.bp.payment.model.PizzaOrderRequest;
+import org.bp.payment.model.OrderRequest;
 import org.bp.payment.model.PizzaInfo;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +19,17 @@ public class PaymentService {
 	}
 	
 	public static class PaymentData {
-		PizzaOrderRequest pizzaOrderRequest;
+		OrderRequest orderRequest;
 		PizzaInfo pizzaPizzaInfo;
 		PizzaInfo deliveryPizzaInfo;
 		public boolean isReady() {
-			return pizzaOrderRequest !=null && pizzaPizzaInfo !=null && deliveryPizzaInfo !=null;
+			return orderRequest !=null && pizzaPizzaInfo !=null && deliveryPizzaInfo !=null;
 		}
 	}
 	
-	public synchronized boolean addPizzaOrderRequest(String pizzaId, PizzaOrderRequest pizzaOrderRequest) {
+	public synchronized boolean addPizzaOrderRequest(String pizzaId, OrderRequest orderRequest) {
 		PaymentData paymentData = getPaymentData(pizzaId);
-		paymentData.pizzaOrderRequest = pizzaOrderRequest;
+		paymentData.orderRequest = orderRequest;
 		return paymentData.isReady();
 	}
 	

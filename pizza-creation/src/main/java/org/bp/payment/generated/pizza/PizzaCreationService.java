@@ -15,7 +15,7 @@ import javax.xml.ws.Service;
  *
  */
 @WebServiceClient(name = "PizzaCreationService",
-                  wsdlLocation = "file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/pizza-creation/src/main/resources/pizza.wsdl",
+                  wsdlLocation = "file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/order-creation/src/main/resources/order.wsdl",
                   targetNamespace = "http://www.bp.org/pizza/")
 public class PizzaCreationService extends Service {
 
@@ -26,11 +26,11 @@ public class PizzaCreationService extends Service {
     static {
         URL url = null;
         try {
-            url = new URL("file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/pizza-creation/src/main/resources/pizza.wsdl");
+            url = new URL("file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/order-creation/src/main/resources/order.wsdl");
         } catch (MalformedURLException e) {
             java.util.logging.Logger.getLogger(PizzaCreationService.class.getName())
                 .log(java.util.logging.Level.INFO,
-                     "Can not initialize the default wsdl from {0}", "file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/pizza-creation/src/main/resources/pizza.wsdl");
+                     "Can not initialize the default wsdl from {0}", "file:/C:/Users/neuba/Documents/semestr9/AZNU/QueryFromaggi/order-creation/src/main/resources/order.wsdl");
         }
         WSDL_LOCATION = url;
     }
