@@ -50,7 +50,7 @@ public class ApplicationConfig {
 	public Endpoint endpoint(Bus bus, PizzaCreationEndpoint pizzaCreationEndpoint) {
 
 		EndpointImpl endpoint = new EndpointImpl(bus, pizzaCreationEndpoint);
-		endpoint.publish("/service/pizza");
+		endpoint.publish("/service/order");
 		
 		return endpoint;
 	}

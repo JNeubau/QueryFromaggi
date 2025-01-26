@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package org.bp.payment.model;
+package org.bp.payment.model.order;
 
 import java.util.Objects;
 

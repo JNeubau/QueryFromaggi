@@ -1,5 +1,5 @@
 
-package org.bp.payment.model;
+package org.bp.payment.model.payment;
 
 import java.util.Objects;
 

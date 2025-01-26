@@ -1,15 +1,16 @@
-package org.bp.payment.model;
+package org.bp.payment.model.order;
 
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.bp.payment.model.delivery.Delivery;
 
 /**
- * PizzaOrderRequest
+ * OrderRequest
  */
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-12-06T08:44:40.322365400+01:00[Europe/Warsaw]")
-public class PizzaOrderRequest {
+public class OrderRequest {
   @JsonProperty("person")
   private Person person = null;
 
@@ -22,7 +23,7 @@ public class PizzaOrderRequest {
 //  @JsonProperty("paymentCard")
 //  private PaymentCard paymentCard = null;
 
-  public PizzaOrderRequest person(Person person) {
+  public OrderRequest person(Person person) {
     this.person = person;
     return this;
   }
@@ -40,7 +41,7 @@ public class PizzaOrderRequest {
     this.person = person;
   }
 
-  public PizzaOrderRequest hotel(Pizza pizza) {
+  public OrderRequest hotel(Pizza pizza) {
     this.pizza = pizza;
     return this;
   }
@@ -58,7 +59,7 @@ public class PizzaOrderRequest {
     this.pizza = pizza;
   }
 
-  public PizzaOrderRequest flight(Delivery delivery) {
+  public OrderRequest flight(Delivery delivery) {
     this.delivery = delivery;
     return this;
   }
@@ -76,7 +77,7 @@ public class PizzaOrderRequest {
     this.delivery = delivery;
   }
 
-//  public PizzaOrderRequest paymentCard(PaymentCard paymentCard) {
+//  public OrderRequest paymentCard(PaymentCard paymentCard) {
 //    this.paymentCard = paymentCard;
 //    return this;
 //  }
@@ -103,11 +104,11 @@ public class PizzaOrderRequest {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PizzaOrderRequest pizzaOrderRequest = (PizzaOrderRequest) o;
-    return Objects.equals(this.person, pizzaOrderRequest.person) &&
-        Objects.equals(this.pizza, pizzaOrderRequest.pizza) &&
-        Objects.equals(this.delivery, pizzaOrderRequest.delivery);
-//        Objects.equals(this.paymentCard, pizzaOrderRequest.paymentCard);
+    OrderRequest orderRequest = (OrderRequest) o;
+    return Objects.equals(this.person, orderRequest.person) &&
+        Objects.equals(this.pizza, orderRequest.pizza) &&
+        Objects.equals(this.delivery, orderRequest.delivery);
+//        Objects.equals(this.paymentCard, orderRequest.paymentCard);
   }
 
   @Override
@@ -122,7 +123,7 @@ public class PizzaOrderRequest {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PizzaOrderRequest {\n");
+    sb.append("class OrderRequest {\n");
     
     sb.append("    person: ").append(toIndentedString(person)).append("\n");
     sb.append("    order: ").append(toIndentedString(pizza)).append("\n");

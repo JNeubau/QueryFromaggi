@@ -22,7 +22,7 @@ import org.bp.payment.generated.types.Pizza;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
  *         &lt;element name="person" type="{http://www.bp.org/types}Person"/&gt;
- *         &lt;element name="pizza" type="{http://www.bp.org/types}Pizza"/&gt;
+ *         &lt;element name="order" type="{http://www.bp.org/types}Pizza"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -69,7 +69,7 @@ public class CreatePizzaRequest {
     }
 
     /**
-     * Gets the value of the pizza property.
+     * Gets the value of the order property.
      * 
      * @return
      *     possible object is
@@ -81,7 +81,7 @@ public class CreatePizzaRequest {
     }
 
     /**
-     * Sets the value of the pizza property.
+     * Sets the value of the order property.
      * 
      * @param value
      *     allowed object is

@@ -1,4 +1,4 @@
-version: '2'
+#version: '2'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -16,12 +16,13 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   gateway:
-    image: micro-services
+    container_name: gateway
+    build:
+      context: ./gateway
     ports:
       - "8090:8090"
     depends_on:
       - kafka
-      - db
     environment:
       TRAVEL_KAFKA_SERVER: kafka:9092
       TRAVEL_SERVICE_TYPE: gateway
@@ -29,21 +30,23 @@ services:
       DATASOURCE_USERNAME: demo
       DATASOURCE_PASSWORD: demo
   pizza:
-    image: micro-services
+    container_name: pizza
+    build:
+      context: ./gateway
     depends_on:
       - kafka
-      - db
     environment:
       TRAVEL_KAFKA_SERVER: kafka:9092
-      TRAVEL_SERVICE_TYPE: pizza
+      TRAVEL_SERVICE_TYPE: order
       DATASOURCE_URL: jdbc:postgresql://db:5432/db
       DATASOURCE_USERNAME: demo
       DATASOURCE_PASSWORD: demo
   delivery:
-    image: micro-services
+    container_name: delivery
+    build:
+      context: ./gateway
     depends_on:
       - kafka
-      - db
     environment:
       TRAVEL_KAFKA_SERVER: kafka:9092
       TRAVEL_SERVICE_TYPE: delivery
@@ -51,22 +54,22 @@ services:
       DATASOURCE_USERNAME: demo
       DATASOURCE_PASSWORD: demo
   payment:
-    image: micro-services
+    container_name: payment
+    build:
+      context: ./gateway
     depends_on:
       - kafka
-      - db
     environment:
       TRAVEL_KAFKA_SERVER: kafka:9092
       TRAVEL_SERVICE_TYPE: payment
       DATASOURCE_URL: jdbc:postgresql://db:5432/db
       DATASOURCE_USERNAME: demo
       DATASOURCE_PASSWORD: demo
-  db:
-    image: 'postgres:latest'
-    environment:
-      - 'POSTGRES_DB=db'
-      - 'POSTGRES_PASSWORD=demo'
-      - 'POSTGRES_USER=demo'
+  user_service:
+    container_name: user_service
+    build:
+      context: ./rest/user_interface
     ports:
-      - '5432:5432'
-
+      - "8083:8083"
+    depends_on:
+      - kafka

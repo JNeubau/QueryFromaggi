@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package org.bp.payment.model;
+package org.bp.payment.model.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,7 +25,7 @@ public class Pizza {
   private String name = null;
 
   @JsonProperty("size")
-  private Float size = null;
+  private float size = 0f;
 
   @JsonProperty("ingredients")
   private String ingredients = null;
@@ -54,7 +54,7 @@ public class Pizza {
     this.name = name;
   }
 
-  public Pizza city(Float size) {
+  public Pizza city(float size) {
     this.size = size;
     return this;
   }
@@ -64,11 +64,11 @@ public class Pizza {
    * @return city
   **/
 
-  public Float getSize() {
+  public float getSize() {
     return size;
   }
 
-  public void setSize(Float size) {
+  public void setSize(float size) {
     this.size = size;
   }
 
