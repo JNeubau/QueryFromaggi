@@ -1,6 +1,5 @@
 package org.bp.payment;
 
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -9,12 +8,10 @@ import org.apache.camel.model.rest.RestParamType;
 import org.bp.payment.model.*;
 import org.bp.payment.model.order.OrderRequest;
 import org.bp.payment.model.order.OrderResponse;
-import org.bp.payment.model.payment.PaymentRequest;
 import org.bp.payment.model.payment.PaymentResponse;
 import org.bp.payment.state.ProcessingEvent;
 import org.bp.payment.state.ProcessingState;
 import org.bp.payment.state.StateService;
-import org.hibernate.validator.internal.constraintvalidators.bv.notempty.NotEmptyValidatorForCharSequence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.bp.payment.exceptions.DeliveryException;
@@ -22,6 +19,7 @@ import org.bp.payment.exceptions.PizzaException;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class PizzaOrderingService extends RouteBuilder {
@@ -76,6 +74,8 @@ public class PizzaOrderingService extends RouteBuilder {
     }
 
     private void gateway() {
+		AtomicBoolean payFinished = new AtomicBoolean(false);
+
 		restConfiguration()
 				.component("servlet")
 				.bindingMode(RestBindingMode.json)
@@ -153,13 +153,11 @@ public class PizzaOrderingService extends RouteBuilder {
 				.log("payment fired")
 				.process(exchange -> {
 					String orderId = exchange.getMessage().getHeader("orderId", String.class);
-					if (paymentService.getPaymentData(orderId).isReady()) {
+//					if (paymentService.getPaymentData(orderId).isReady()) {
+					if (payFinished.get()) {
+						payFinished.set(false);
 						PaymentResponse response = Utils.createPaymentResponse(200);
 						exchange.getMessage().setBody(response);
-						pizzaStateService.sendEvent(orderId, ProcessingEvent.COMPLETE);
-						pizzaStateService.sendEvent(orderId, ProcessingEvent.COMPLETE);
-//						pizzaStateService.removeState(orderId);
-//						deliveryStateService.removeState(orderId);
 					} else {
 						PaymentResponse response = Utils.createPaymentResponse(400);
 						exchange.getMessage().setBody(response);
@@ -167,28 +165,11 @@ public class PizzaOrderingService extends RouteBuilder {
 				})
 				.log("Processed payment response: ${body}");
 
-//		from("direct:payment2").routeId("payment")
-//				.log("payment fired")
-//				.process(exchange -> {
-//					try {
-//						PaymentRequest request = exchange.getMessage().getBody(PaymentRequest.class);
-//						PaymentResponse response = Utils.createPaymentResponse(200);
-//						exchange.getMessage().setBody(response);
-//					} catch (Exception e) {
-//						System.err.println("Exception occurred during execution on the exchange: " + e.getMessage());
-//						PaymentRequest request = exchange.getMessage().getBody(PaymentRequest.class);
-//						PaymentResponse response = Utils.createPaymentResponse(400);
-//						exchange.getMessage().setBody(response);
-//					}
-//				})
-//				.log("Processed payment response: ${body}");
-
-		//		from("direct:finalize2").routeId("finalize")
-//		.log("fired finalize")
-//			.setHeader("pizzaCreationId", simple("112"))
-//			.setHeader("requestSource", constant("PizzaOrderingService"))
-//			.toD("http://localhost:8083/showPopup?orderId=${header.pizzaCreationId}")
-//			.log("Response from REST endpoint: ${body}");
+		from("kafka:PaymentInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentInfo")
+				.log("fired PaymentInfoTopic")
+				.process(exchange -> {
+					payFinished.set(true);
+				});
     }
 
 	private void pizzaCreationExceptionHandlers() {
@@ -278,6 +259,10 @@ public class PizzaOrderingService extends RouteBuilder {
 
 		from("direct:pizzaCreationCompensationAction").routeId("pizzaCreationCompensationAction")
 		.log("fired pizzaCreationCompensationAction")
+				.process((exchange) -> {
+					String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+					pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
+				})
 		.to("stream:out");
 //		.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
@@ -341,6 +326,10 @@ public class PizzaOrderingService extends RouteBuilder {
 
 		from("direct:makeDeliveryCompensationAction").routeId("makeDeliveryCompensationAction")
 		.log("fired makeDeliveryCompensationAction")
+			.process((exchange) -> {
+				String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+				deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
+			})
 		.to("stream:out");
 //				.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
@@ -405,12 +394,10 @@ public class PizzaOrderingService extends RouteBuilder {
 			.log("fired notification")
 					.process(exchange -> {
 						String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-//						pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
-//						pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
-//						pizzaStateService.removeState(pizzaCreationId);
-//						deliveryStateService.removeState(pizzaCreationId);
+						paymentService.getPaymentData(pizzaCreationId).finished = true;
 					})
-			.to("stream:out");
+			.to("stream:out")
+					.to("kafka:PaymentInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 //			.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 

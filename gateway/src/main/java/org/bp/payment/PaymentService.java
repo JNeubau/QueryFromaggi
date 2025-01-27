@@ -22,6 +22,7 @@ public class PaymentService {
 		OrderRequest orderRequest;
 		PizzaInfo pizzaPizzaInfo;
 		PizzaInfo deliveryPizzaInfo;
+		boolean finished;
 		public boolean isReady() {
 			return orderRequest !=null && pizzaPizzaInfo !=null && deliveryPizzaInfo !=null;
 		}
