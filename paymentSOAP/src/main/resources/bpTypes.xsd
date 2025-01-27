@@ -3,18 +3,6 @@
             xmlns="http://www.bp.org/types"
             targetNamespace="http://www.bp.org/types"
             elementFormDefault="qualified">
-<!--    <xsd:complexType name="Delivery">-->
-<!--    <xsd:sequence>-->
-<!--      <xsd:element name="from" type="Point"/>-->
-<!--      <xsd:element name="to" type="Point"/>-->
-<!--    </xsd:sequence>-->
-<!--  </xsd:complexType>-->
-<!--  <xsd:complexType name="Point">-->
-<!--    <xsd:sequence>-->
-<!--      <xsd:element name="address" type="xsd:string"/>-->
-<!--      <xsd:element name="date" type="xsd:dateTime"/>-->
-<!--    </xsd:sequence>-->
-<!--  </xsd:complexType>-->
   <xsd:complexType name="PaymentCard">
     <xsd:sequence>
       <xsd:element name="name" type="xsd:string"/>
@@ -28,15 +16,6 @@
           <xsd:element name="email" type="xsd:string"/>
         </xsd:sequence>
       </xsd:complexType>
-<!--     <xsd:complexType name="Pizza">-->
-<!--	     <xsd:sequence>-->
-<!--	       <xsd:element name="name" type="xsd:string"/>-->
-<!--	       <xsd:element name="size" type="xsd:float"/>-->
-<!--	       <xsd:element name="ingredients" type="xsd:string"/>-->
-<!--	       <xsd:element name="prize" type="xsd:float"/>-->
-<!--	       <xsd:element name="prepTime" type="xsd:dateTime"/>-->
-<!--      </xsd:sequence>-->
-<!--    </xsd:complexType>-->
     <xsd:complexType name="PaymentInfo">
     	<xsd:sequence>
     		<xsd:element name="id" type="xsd:int"/>

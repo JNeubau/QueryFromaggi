@@ -23,6 +23,22 @@ public class Amount {
 	public void setCurrency(String currency) {
 		this.currency = currency;
 	}
-	
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Amount {\n");
+
+		sb.append("    value: ").append(toIndentedString(value)).append("\n");
+		sb.append("    currency: ").append(toIndentedString(currency)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
+
+	private String toIndentedString(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 }

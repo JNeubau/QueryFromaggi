@@ -22,6 +22,7 @@ public class PaymentService {
 		OrderRequest orderRequest;
 		PizzaInfo pizzaPizzaInfo;
 		PizzaInfo deliveryPizzaInfo;
+		boolean finished;
 		public boolean isReady() {
 			return orderRequest !=null && pizzaPizzaInfo !=null && deliveryPizzaInfo !=null;
 		}
@@ -52,6 +53,14 @@ public class PaymentService {
 		}
 		return paymentData;
 	}
-	
+
+	public synchronized boolean checkPaymentData(String orderId) {
+		PaymentData paymentData = payments.get(orderId);
+		if (paymentData == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 }

@@ -31,4 +31,12 @@ public class StateService {
 		processingStates.remove(bookingId);
 	}
 
+	public ProcessingState getState(String pizzaId) {
+		StateMachine stateMachine = processingStates.get(pizzaId);
+		if (stateMachine != null) {
+			return stateMachine.getCurrentState();
+		}
+		return null; // or throw an exception if preferred
+	}
+
 }

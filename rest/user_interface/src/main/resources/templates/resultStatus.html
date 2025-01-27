@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Result</title>
+</head>
+<body>
+
+<p th:if="${paymentInfo != null}">
+<h3 th:text="${paymentInfo.transactionId != null and paymentInfo.transactionId eq 200 ? 'Payment Successful' : 'Payment Unsuccessful'}"></h3>
+<strong>Transaction Code:</strong> <span th:text="${paymentInfo.transactionId}">Transaction ID will be displayed here.</span><br/>
+<strong>Transaction Date:</strong> <span th:text="${paymentInfo.transactionDate}">Transaction Date will be displayed here.</span><br/>
+</p>
+
+  <a href="/orderForm" th:href="@{/orderForm}">Go to new Order</a>
+
+</body>
+</html>

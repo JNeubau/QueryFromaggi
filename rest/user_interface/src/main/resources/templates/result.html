@@ -5,12 +5,13 @@
   <title>Payment Result</title>
 </head>
 <body>
-  <h1>Payment Result</h1>
-  <p th:if="${paymentInfo != null}">
-    <h3>Payment Successful</h3>
-    <strong>Transaction ID:</strong> <span th:text="${paymentInfo.transactionId}">Transaction ID will be displayed here.</span><br/>
-    <strong>Transaction Date:</strong> <span th:text="${paymentInfo.transactionDate}">Transaction Date will be displayed here.</span><br/>
-  </p>
-  <a href="/orderForm" th:href="@{/orderForm}">Go to new Order</a>
+
+<h1>Payment Result</h1>
+<form th:action="@{/paymentForm/{orderId}(orderId=${orderId})}" method="get">
+  <button type="submit">Get Payment Status</button>
+</form>
+
+<!--<a href="/orderForm" th:href="@{/orderForm}">Go to new Order</a>-->
+
 </body>
 </html>

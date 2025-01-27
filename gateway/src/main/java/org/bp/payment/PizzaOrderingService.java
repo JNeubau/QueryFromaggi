@@ -1,6 +1,5 @@
 package org.bp.payment;
 
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -9,7 +8,6 @@ import org.apache.camel.model.rest.RestParamType;
 import org.bp.payment.model.*;
 import org.bp.payment.model.order.OrderRequest;
 import org.bp.payment.model.order.OrderResponse;
-import org.bp.payment.model.payment.PaymentRequest;
 import org.bp.payment.model.payment.PaymentResponse;
 import org.bp.payment.state.ProcessingEvent;
 import org.bp.payment.state.ProcessingState;
@@ -21,6 +19,7 @@ import org.bp.payment.exceptions.PizzaException;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class PizzaOrderingService extends RouteBuilder {
@@ -43,7 +42,7 @@ public class PizzaOrderingService extends RouteBuilder {
 	@org.springframework.beans.factory.annotation.Value("${travel.service.type}")
 	private String travelServiceType;
 
-    @Override
+	@Override
     public void configure() throws Exception {
 		onException(Exception.class)
             .process(exchange -> {
@@ -57,25 +56,6 @@ public class PizzaOrderingService extends RouteBuilder {
             .marshal().json(JsonLibrary.Jackson)
             .to("stream:out")
             .handled(true);
-			
-//		restConfiguration()
-//			.component("servlet")
-//			.bindingMode(RestBindingMode.json)
-//			.dataFormatProperty("prettyPrint", "true")
-//			.enableCORS(true)
-//			.contextPath("/api")
-//			.apiContextPath("/api-doc")
-//			.apiProperty("api.title", "Travel booking API")
-//			.apiProperty("api.version", "1.0.0");
-//
-//		rest("/order").description("Pizza REST service")
-//				.consumes("application/json")
-//				.produces("application/json")
-//				.post("/order").description("Order a pizza")
-//				.type(TravelBookingRequest.class).outType(org.bp.payment.PaymentResponse.class)
-//					.param().name("body").type(body).description("The travel to book").endParam()
-//					.responseMessage().code(200).message("Travel successfully booked").endResponseMessage()
-//					.to("direct:bookTravel");
 
 		if (travelServiceType.equals("all") || travelServiceType.equals("order"))
 			pizzaCreationExceptionHandlers();
@@ -94,6 +74,8 @@ public class PizzaOrderingService extends RouteBuilder {
     }
 
     private void gateway() {
+		AtomicBoolean payFinished = new AtomicBoolean(false);
+
 		restConfiguration()
 				.component("servlet")
 				.bindingMode(RestBindingMode.json)
@@ -116,47 +98,78 @@ public class PizzaOrderingService extends RouteBuilder {
                 .responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
 				.responseMessage().code(400).message("Bad Request").endResponseMessage()
                 .to("direct:orderPizza2")
-				.post("/payment").description("Handle Payment")
-				.type(OrderRequest.class)
-				.outType(OrderResponse.class)
-				.param().name("body").type(RestParamType.body).description("The order to order").endParam()
-				.responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
+				.get("/payment/{orderId}").description("Handle Payment Status")
+				.outType(PaymentResponse.class)
+				.param().name("orderId").type(RestParamType.path).description("Order id").endParam()
+				.responseMessage().code(200).message("Payment status successful").endResponseMessage()
 				.responseMessage().code(400).message("Bad Request").endResponseMessage()
-				.to("direct:payment2");
+				.to("direct:payment3");
+//				.post("/payment").description("Handle Payment")
+//				.type(OrderRequest.class)
+//				.outType(OrderResponse.class)
+//				.param().name("body").type(RestParamType.body).description("The order to order").endParam()
+//				.responseMessage().code(200).message("Pizza successfully ordered").endResponseMessage()
+//				.responseMessage().code(400).message("Bad Request").endResponseMessage()
+//				.to("direct:payment2");
 
-		from("direct:orderPizza2").routeId("orderPizza")
+
+		from("direct:orderPizza2").routeId("orderPizza2")
 				.log("OrderPizza2 fired")
+				.log("Processed order response: ${body}")
+				.process(exchange -> {
+					OrderRequest request = exchange.getMessage().getBody(OrderRequest.class);
+					String pizzaId = pizzaIdentifierService.getPizzaIdentifier();
+					pizzaStateService.sendEvent(pizzaId, ProcessingEvent.START);
+					deliveryStateService.sendEvent(pizzaId, ProcessingEvent.START);
+					exchange.getMessage().setHeader("pizzaCreationId", pizzaId);
+					exchange.getMessage().setBody(request);
+				})
+				.to("direct:SendOrderToKafka")
+				.to("direct:ReturnOrderResponse");
+
+		from("direct:SendOrderToKafka").routeId("SendOrderToKafka")
+				.marshal().json()
+				.to("kafka:CreateOrder?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
+				.to("kafka:AddToPayment?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
+				.to("kafka:MakeDelivery?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
+
+		from("direct:ReturnOrderResponse").routeId("ReturnOrderResponse")
+				.log("ReturnOrderResponse fired")
 				.process(exchange -> {
 					try {
+						String pizzaId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
 						OrderRequest request = exchange.getMessage().getBody(OrderRequest.class);
-						OrderResponse response = Utils.createOrderResponse();
+						OrderResponse response = Utils.createOrderResponse(pizzaId);
 						exchange.getMessage().setBody(response);
-					} catch (CamelExecutionException e) {
-						System.err.println("Exception occurred during camel on the exchange: " + e.getMessage());
-						throw e;
 					} catch (Exception e) {
-						System.err.println("Exception occurred during execution on the exchange: " + e.getMessage());
-						throw e;
+						OrderRequest request = exchange.getMessage().getBody(OrderRequest.class);
+						OrderResponse response = Utils.createErrorOrderResponse(pizzaIdentifierService.getPizzaIdentifier(), e.getMessage());
+						exchange.getMessage().setBody(response);
 					}
 				})
 				.log("Processed order response: ${body}");
 
-		from("direct:payment2").routeId("payment")
+		from("direct:payment3").routeId("payment")
 				.log("payment fired")
 				.process(exchange -> {
-					try {
-						PaymentRequest request = exchange.getMessage().getBody(PaymentRequest.class);
-						PaymentResponse response = Utils.createPaymentResponse();
+					String orderId = exchange.getMessage().getHeader("orderId", String.class);
+//					if (paymentService.getPaymentData(orderId).isReady()) {
+					if (payFinished.get()) {
+						payFinished.set(false);
+						PaymentResponse response = Utils.createPaymentResponse(200);
 						exchange.getMessage().setBody(response);
-					} catch (CamelExecutionException e) {
-						System.err.println("Exception occurred during camel on the exchange: " + e.getMessage());
-						throw e;
-					} catch (Exception e) {
-						System.err.println("Exception occurred during execution on the exchange: " + e.getMessage());
-						throw e;
+					} else {
+						PaymentResponse response = Utils.createPaymentResponse(400);
+						exchange.getMessage().setBody(response);
 					}
 				})
 				.log("Processed payment response: ${body}");
+
+		from("kafka:PaymentInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentInfo")
+				.log("fired PaymentInfoTopic")
+				.process(exchange -> {
+					payFinished.set(true);
+				});
     }
 
 	private void pizzaCreationExceptionHandlers() {
@@ -194,19 +207,7 @@ public class PizzaOrderingService extends RouteBuilder {
 	}
 
 	private void PizzaCreation() {
-//		from("kafka:orderPizza2?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("orderPizza")
-//				.log("orderPizza fired")
-//				.process(exchange -> {
-//					OrderRequest request = exchange.getMessage().getBody(OrderRequest.class);
-//					// Process the request and create an OrderResponse
-//					OrderResponse response = new OrderResponse();
-//					response.setOrderId(pizzaIdentifierService.getPizzaIdentifier());
-//					response.setOrderStatus("SUCCESS");
-//					response.setOrderDescription("Pizza order processed successfully");
-//					exchange.getMessage().setBody(response);
-//				});
-
-		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("createPizza")
+		from("kafka:CreateOrder?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("createPizza")
 		.log("fired createPizza")
 		.unmarshal().json(JsonLibrary.Jackson, OrderRequest.class)
 		.process(
@@ -215,18 +216,12 @@ public class PizzaOrderingService extends RouteBuilder {
 					ProcessingState previousState = pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.START);
 					if (previousState != ProcessingState.CANCELLED) {
 						PizzaInfo pi = new PizzaInfo();
-						pi.setId(pizzaIdentifierService.getPizzaIdentifier());
+						pi.setId(pizzaCreationId);
 						OrderRequest por = exchange.getMessage().getBody(OrderRequest.class);
 						if (por != null && por.getPizza() != null) {
-							BigDecimal prize = new BigDecimal(40);
 							String ingredients = por.getPizza().getIngredients();
 							if (ingredients.contains("ananas")) {
 								throw new PizzaException("No ingredient: " + ingredients);
-							} else if (ingredients.length() >= 10) {
-								pi.setCost(prize.add(BigDecimal.valueOf(por.getPizza().getIngredients().length() * 2L)));
-//								pi.setCost(prize + (por.getPizza().getIngredients().length() * 1.5f));
-							} else {
-								pi.setCost(prize);
 							}
 						}
 						exchange.getMessage().setBody(pi);
@@ -241,7 +236,9 @@ public class PizzaOrderingService extends RouteBuilder {
 			.to("direct:pizzaCreationCompensationAction")
 		.otherwise()
 			.setHeader("serviceType", constant("order"))
+				// finalize create order
 				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
+				.log("fired finalize create order ${body}")
 		.endChoice();
 
 		from("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("pizzaCreationCompensation")
@@ -262,12 +259,16 @@ public class PizzaOrderingService extends RouteBuilder {
 
 		from("direct:pizzaCreationCompensationAction").routeId("pizzaCreationCompensationAction")
 		.log("fired pizzaCreationCompensationAction")
+				.process((exchange) -> {
+					String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+					pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
+				})
 		.to("stream:out");
 //		.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 
 	private void delivery() {
-		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("makeDelivery")
+		from("kafka:MakeDelivery?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("makeDelivery")
 		.log("fired makeDelivery")
 		.unmarshal().json(JsonLibrary.Jackson, OrderRequest.class)
 		.process(
@@ -276,7 +277,7 @@ public class PizzaOrderingService extends RouteBuilder {
 					ProcessingState previousState = deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.START);
 					if (previousState != ProcessingState.CANCELLED) {
 						PizzaInfo pi = new PizzaInfo();
-						pi.setId(pizzaIdentifierService.getPizzaIdentifier());
+						pi.setId(pizzaCreationId);
 
 						OrderRequest por = exchange.getMessage().getBody(OrderRequest.class);
 						if (por != null && por.getDelivery() != null &&
@@ -302,7 +303,9 @@ public class PizzaOrderingService extends RouteBuilder {
 			.to("direct:makeDeliveryCompensationAction")
 		.otherwise()
 			.setHeader("serviceType", constant("delivery"))
+				// finalize make delivery
 				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
+				.log("fired finalize make delivery ${body}")
 		.endChoice();
 
 		from("kafka:PizzaOrderingFailTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("makeDeliveryCompensation")
@@ -323,8 +326,12 @@ public class PizzaOrderingService extends RouteBuilder {
 
 		from("direct:makeDeliveryCompensationAction").routeId("makeDeliveryCompensationAction")
 		.log("fired makeDeliveryCompensationAction")
-		.to("stream:out")
-				.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
+			.process((exchange) -> {
+				String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+				deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
+			})
+		.to("stream:out");
+//				.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
 
 	private void payment() {
@@ -344,7 +351,7 @@ public class PizzaOrderingService extends RouteBuilder {
 				.when(header("isReady").isEqualTo(true)).to("direct:finalizePayment")
 				.endChoice();
 
-		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentPizzaReq")
+		from("kafka:AddToPayment?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("paymentPizzaReq")
 				.log("fired paymentPizzaReq")
 				.unmarshal().json(JsonLibrary.Jackson, OrderRequest.class)
 				.process(
@@ -365,90 +372,33 @@ public class PizzaOrderingService extends RouteBuilder {
 						(exchange) -> {
 							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
 							PaymentService.PaymentData paymentData = paymentService.getPaymentData(pizzaCreationId);
-							BigDecimal pizzaCost = paymentData.pizzaPizzaInfo.getCost();
+//							BigDecimal pizzaCost = paymentData.pizzaPizzaInfo.getCost();
+							BigDecimal pizzaCost = paymentData.orderRequest.getPizza().getPrize();
 							BigDecimal deliveryCost = paymentData.deliveryPizzaInfo.getCost();
 							BigDecimal totalCost = pizzaCost.add(deliveryCost);
 							PizzaInfo pizzaInfo = new PizzaInfo();
 							pizzaInfo.setId(pizzaCreationId);
 							pizzaInfo.setCost(totalCost);
-							exchange.getMessage().setHeader("pizzaCreationId", pizzaIdentifierService.getPizzaIdentifier());
+							exchange.getMessage().setHeader("pizzaCreationId", pizzaCreationId);
 							exchange.getMessage().setBody(pizzaInfo);
+//							try {
+//								Thread.sleep(15000);
+//							} catch (InterruptedException e) {
+//								Thread.currentThread().interrupt();
+//								throw new RuntimeException(e);
+//							}
 						})
 				.to("direct:notification");
 
 			from("direct:notification").routeId("notification")
 			.log("fired notification")
-			.to("stream:out");
+					.process(exchange -> {
+						String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
+						paymentService.getPaymentData(pizzaCreationId).finished = true;
+					})
+			.to("stream:out")
+					.to("kafka:PaymentInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 //			.to("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
 	}
-
-	//	private void PaymentSOAP() {
-//		from("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("createSOAPPizza")
-//				.log("fired createSOAPPizza")
-//				.unmarshal().json(JsonLibrary.Jackson, OrderRequest.class)
-//				.process(
-//						(exchange) -> {
-//							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-//							ProcessingState previousState = pizzaStateService.sendEvent(pizzaCreationId, ProcessingEvent.START);
-//						})
-//		.to("direct:OrderPizzaRequest")
-//		.to("direct:pizzaRequester");
-//
-//		from("direct:pizzaRequester").routeId("pizzaRequester")
-//		.log("pizzaRequester fired")
-//		.process(
-//				(exchange) -> {
-//					exchange.getMessage().setBody(Utils.preparePizzaInfo(
-//							exchange.getMessage().getHeader("pizzaCreationId", String.class), null));
-//				}
-//		);
-////		http://localhost:8080/soap-api/service/payment
-//
-//		from("direct:OrderPizzaRequest").routeId("OrderPizzaRequest")
-//		.log("brokerTopic fired")
-//		.marshal().json()
-//		.to("kafka:PizzaReqTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType);
-//	}
-
-//	private void setCompleted() {
-//		from("kafka:finalize?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType).routeId("finalize")
-//			.log("fired finalize")
-////			.to("stream:out")
-//				.unmarshal().json(JsonLibrary.Jackson, OrderRequest.class)
-//				.process(
-//						(exchange) -> {
-//							String pizzaCreationId = exchange.getMessage().getHeader("pizzaCreationId", String.class);
-//							ProcessingState previousState = deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.COMPLETE);
-////							if (previousState != ProcessingState.CANCELLED || previousState != ProcessingState.FINISHED) {
-////								PizzaInfo pi = new PizzaInfo();
-////								pi.setId(pizzaIdentifierService.getPizzaIdentifier());
-////
-////								OrderRequest por = exchange.getMessage().getBody(OrderRequest.class);
-////								if (por != null && por.getDelivery() != null &&
-////										por.getDelivery().getFrom() != null && por.getDelivery().getFrom().getAddress() != null) {
-////									String place = por.getDelivery().getFrom().getAddress();
-////									if (place.equals("Poznan")) {
-////										pi.setCost(10f);
-////									} else if (place.equals("Warsaw")) {
-////										throw new DeliveryException("Not serviced destination: " + place);
-////									} else {
-////										pi.setCost(20f);
-////									}
-////								}
-////								exchange.getMessage().setBody(pi);
-////								previousState = deliveryStateService.sendEvent(pizzaCreationId, ProcessingEvent.FINISH);
-////							}
-//							exchange.getMessage().setHeader("Completed from", previousState);
-//						})
-//				.marshal().json()
-//				.to("stream:out");
-////				.choice()
-////				.when(header("previousState").isEqualTo(ProcessingState.CANCELLED))
-////				.to("direct:makeDeliveryCompensationAction")
-////				.otherwise()
-////				.setHeader("serviceType", constant("delivery"))
-////				.to("kafka:PizzaInfoTopic?brokers=" + travelKafkaServer + "&groupId=" + travelServiceType)
-////				.endChoice();
-//    }
 
 }

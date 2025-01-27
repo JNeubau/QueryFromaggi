@@ -72,4 +72,12 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - kafka
+      - gateway
+#  payment_soap:
+#    container_name: payment_soap
+#    build:
+#      context: ./paymentSOAP
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - payment

@@ -16,4 +16,8 @@ public class StateMachine {
 		return previousState;		
 	}
 
+	public ProcessingState getCurrentState() {
+		return state;
+	}
+
 }

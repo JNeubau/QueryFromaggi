@@ -23,4 +23,9 @@ public class ClientService {
         String url = "http://localhost:8083/payment";
         return restTemplate.postForObject(url, paymentRequest, PaymentResponse.class);
     }
+
+    public PaymentResponse paymentStatus(String orderId) {
+        String url = "http://localhost:8083/payment/" + orderId;
+        return restTemplate.getForObject(url, PaymentResponse.class);
+    }
 }

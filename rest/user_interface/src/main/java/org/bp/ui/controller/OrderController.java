@@ -5,6 +5,7 @@ import org.bp.ui.model.order.*;
 import org.bp.ui.model.payment.Amount;
 import org.bp.ui.model.payment.PaymentCard;
 import org.bp.ui.model.payment.PaymentRequest;
+import org.bp.ui.model.payment.PaymentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,10 +43,21 @@ public class OrderController {
         if (orderRequest.getDelivery().getTo() == null) {
             orderRequest.getDelivery().setTo(new Point());
         }
+        if (orderRequest.getPaymentRequest() == null) {
+            orderRequest.setPaymentRequest(new PaymentRequest());
+        }
+        if (orderRequest.getPaymentRequest().getAmount() == null) {
+            orderRequest.getPaymentRequest().setAmount(new Amount());
+        }
+        if (orderRequest.getPaymentRequest().getPaymentCard() == null) {
+            orderRequest.getPaymentRequest().setPaymentCard(new PaymentCard());
+        }
 
         BigDecimal newPrize = BigDecimal.valueOf(orderRequest.getPizza().getSize() + 20
                 + orderRequest.getPizza().getIngredients().length() * 3);
         orderRequest.getPizza().setPrize(newPrize);
+
+        orderRequest.getPaymentRequest().getAmount().setValue(newPrize);
 
         OffsetDateTime now = OffsetDateTime.now();
         int randomMinutes = ThreadLocalRandom.current().nextInt(30, 61);
@@ -57,17 +69,10 @@ public class OrderController {
 
         OrderResponse orderResponse = clientService.placeOrder(orderRequest);
 
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setAmount(new Amount());
-        paymentRequest.setPaymentCard(new PaymentCard());
-        paymentRequest.getAmount().setValue(newPrize);
-        model.addAttribute("paymentRequest", paymentRequest);
-
-        model.addAttribute("orderRequest", orderRequest);
-        model.addAttribute("orderResponse", orderResponse);
-        model.addAttribute("paymentRequest", paymentRequest);
-        return "orderConfirmation";
+        model.addAttribute("orderId", orderResponse.getOrderId());
+        return "result";
     }
+
 
     @GetMapping("/cancelOrder")
     public String cancelOrder(@ModelAttribute OrderRequest orderRequest, Model model) {

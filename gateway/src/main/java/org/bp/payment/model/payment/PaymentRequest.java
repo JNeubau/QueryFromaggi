@@ -22,4 +22,21 @@ public class PaymentRequest {
 		this.amount = amount;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PaymentRequest {\n");
+
+		sb.append("    paymentCard: ").append(toIndentedString(paymentCard)).append("\n");
+		sb.append("    amount: ").append(toIndentedString(amount)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
+
+	private String toIndentedString(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 }
