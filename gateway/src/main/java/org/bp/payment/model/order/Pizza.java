@@ -155,7 +155,7 @@ public class Pizza {
     sb.append("class Pizza {\n");
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    city: ").append(toIndentedString(size)).append("\n");
+    sb.append("    size: ").append(toIndentedString(size)).append("\n");
     sb.append("    country: ").append(toIndentedString(prize)).append("\n");
     sb.append("    ingredients: ").append(toIndentedString(ingredients)).append("\n");
     sb.append("    prepTime: ").append(toIndentedString(prepTime)).append("\n");

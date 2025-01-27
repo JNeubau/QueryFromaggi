@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bp.payment.model.delivery.Delivery;
+import org.bp.payment.model.payment.PaymentRequest;
 
 /**
  * OrderRequest
@@ -20,8 +21,22 @@ public class OrderRequest {
   @JsonProperty("delivery")
   private Delivery delivery = null;
 
-//  @JsonProperty("paymentCard")
-//  private PaymentCard paymentCard = null;
+  @JsonProperty("paymentRequest")
+  private PaymentRequest paymentRequest = null;
+
+
+  public OrderRequest paymentRequest(PaymentRequest paymentRequest) {
+    this.paymentRequest = paymentRequest;
+    return this;
+  }
+  public PaymentRequest getPaymentRequest() {
+    return paymentRequest;
+  }
+
+  public void setPaymentRequest(PaymentRequest paymentRequest) {
+    this.paymentRequest = paymentRequest;
+  }
+
 
   public OrderRequest person(Person person) {
     this.person = person;
@@ -128,6 +143,7 @@ public class OrderRequest {
     sb.append("    person: ").append(toIndentedString(person)).append("\n");
     sb.append("    order: ").append(toIndentedString(pizza)).append("\n");
     sb.append("    delivery: ").append(toIndentedString(delivery)).append("\n");
+    sb.append("    paymentRequest: ").append(toIndentedString(paymentRequest)).append("\n");
 //    sb.append("    paymentCard: ").append(toIndentedString(paymentCard)).append("\n");
     sb.append("}");
     return sb.toString();

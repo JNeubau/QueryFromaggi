@@ -42,7 +42,8 @@
   <wsdl:binding name="PaymentCreationSOAP" type="tns:PaymentCreation">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsdl:operation name="makePayment">
-      <soap:operation soapAction="http://www.bp.org/pizza/makePayment"/>
+      <soap:operation soapAction="http://www.bp.org/payment/makePayment"/>
+      <soap:operation soapAction="http://www.bp.org/payment/makePayment"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
@@ -54,7 +55,7 @@
       </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="cancelPayment">
-      <soap:operation soapAction="http://www.bp.org/pizza/cancelPayment"/>
+      <soap:operation soapAction="http://www.bp.org/payment/cancelPayment"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>

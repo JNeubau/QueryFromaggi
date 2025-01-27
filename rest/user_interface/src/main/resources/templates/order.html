@@ -43,8 +43,28 @@
         <option value="Cracow">Cracow</option>
     </select><br/>
 
+    <h2>Payment Details</h2>
+    <label for="paymentCardName">Owner Name:</label>
+    <input type="text" id="paymentCardName" th:field="*{paymentRequest.paymentCard.name}" /><br/>
+
+    <label for="paymentCardNumber">Card Number:</label>
+    <input type="text" id="paymentCardNumber" th:field="*{paymentRequest.paymentCard.number}" /><br/>
+
+    <label for="paymentCardExpiry">Card Expiry:</label>
+    <input type="text" id="paymentCardExpiry" th:field="*{paymentRequest.paymentCard.validTo}" /><br/>
+
+    <label for="currency">Currency:</label>
+    <select id="currency" th:field="*{paymentRequest.amount.currency}">
+        <option value="PLN">PLN</option>
+        <option value="USD">USD</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+    </select><br/>
+
     <button type="submit">Submit Order</button>
     <button type="button" onclick="window.location.href='/clearOrder'">Cancel Order</button>
+</form>
+</body>
 </form>
 </body>
 </html>

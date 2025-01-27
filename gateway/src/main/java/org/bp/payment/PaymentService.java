@@ -52,6 +52,14 @@ public class PaymentService {
 		}
 		return paymentData;
 	}
-	
+
+	public synchronized boolean checkPaymentData(String orderId) {
+		PaymentData paymentData = payments.get(orderId);
+		if (paymentData == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 }

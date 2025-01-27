@@ -30,9 +30,9 @@ public class Utils {
 		return orderResponse;
 	}
 
-	public static PaymentResponse createPaymentResponse(int paymentId) {
+	public static PaymentResponse createPaymentResponse(int paymentStatus) {
 		PaymentResponse paymentResponse = new PaymentResponse();
-		paymentResponse.setTransactionId(paymentId);
+		paymentResponse.setTransactionId(paymentStatus);
 		paymentResponse.setTransactionDate(new Date());
 		return paymentResponse;
 	}

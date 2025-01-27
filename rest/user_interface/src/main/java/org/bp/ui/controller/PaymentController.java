@@ -11,10 +11,7 @@ import org.bp.ui.model.payment.PaymentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
@@ -24,10 +21,18 @@ public class PaymentController {
     @Autowired
     private ClientService clientService;
 
-    @PostMapping("/paymentForm")
-    public String makePayment(@ModelAttribute PaymentRequest paymentRequest, Model model) {
-        PaymentResponse paymentResponse = clientService.payForOrder(paymentRequest);
+    @GetMapping("/paymentForm/{orderId}")
+    public String makePayment(@PathVariable String orderId, Model model) {
+        System.out.println("Order ID peymentForm: " + orderId);
+        PaymentResponse paymentResponse = clientService.paymentStatus(orderId);
+        model.addAttribute("orderId", orderId);
         model.addAttribute("paymentInfo", paymentResponse);
+        return "resultStatus";
+    }
+
+    @GetMapping("/result/{orderId}")
+    public String getResult(@PathVariable String orderId, Model model) {
+        model.addAttribute("orderId", orderId);
         return "result";
     }
 }
